@@ -1,6 +1,6 @@
 services:
   backend:
-    image: maven:3.9.16-eclipse-temurin-25
+    image: maven:3.9.6-eclipse-temurin-21
     container_name: marketplace-backend
     working_dir: /app
     volumes:
