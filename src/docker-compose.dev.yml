@@ -1,4 +1,17 @@
 services:
+  backend:
+    image: maven:3.9.16-eclipse-temurin-25
+    container_name: marketplace-backend
+    working_dir: /app
+    volumes:
+      - ./backend/marketplace-mps-api:/app
+      - ~/.m2:/root/.m2
+    command: ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+
   postgres:
     image: postgres:15
     container_name: dev-ominimarket-postgres
