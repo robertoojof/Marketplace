@@ -5,5 +5,5 @@
 Para rodar o projeto no modo de desenvolvimento, utilize o seguinte comando a partir do diretório `src` do projeto:
 
 ```bash
-docker compose -f "./docker-compose.dev.yml" up --build -d
+docker compose -f "./docker-compose.dev.yml" up --build --watch
 ```
