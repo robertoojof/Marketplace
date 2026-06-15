@@ -3,17 +3,19 @@ package com.mps;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
+import com.mps.users.UsersModule;
 import com.mps.users.view.UserView;
 
 public class TerminalApp {
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
+        UserView userView = UsersModule.create(scanner);
 
         while (true) {
             try {
                 System.out.println("\n=============================");
-                System.out.println("   Bem-vindo ao Sistema SGO   ");
+                System.out.println("   Oministore (Terminal edition)   ");
                 System.out.println("=============================");
                 System.out.println("Escolha uma opção:");
                 System.out.println("  1. Gerenciar Usuários");
@@ -25,10 +27,7 @@ public class TerminalApp {
                 scanner.nextLine();
 
                 switch (in) {
-                    case 1 -> {
-                        UserView userView = new UserView(scanner);
-                        userView.userMenu();
-                    }
+                    case 1 -> userView.userMenu();
                     case 7 -> {
                         System.out.println("Encerrando o programa...");
                         scanner.close();
