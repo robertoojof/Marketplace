@@ -5,8 +5,10 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.UUID;
 
+import com.mps.shared.exception.RepositorioException;
 import com.mps.users.domain.Role;
 import com.mps.users.domain.User;
+import com.mps.users.domain.exception.ValidacaoUsuarioException;
 import com.mps.users.presentation.controller.UserController;
 
 public class UserView {
@@ -51,6 +53,8 @@ public class UserView {
     }
 
     private void adicionarUsuario() {
+        System.out.print("Login: ");
+        String login = scanner.nextLine();
         System.out.print("Nome: ");
         String nome = scanner.nextLine();
         System.out.print("CPF: ");
@@ -60,21 +64,33 @@ public class UserView {
         System.out.print("Senha: ");
         String senha = scanner.nextLine();
 
-        User user = new User(UUID.randomUUID(), cpf, nome, email, senha, Role.USER);
-        userController.adicionarUsuario(user);
-        System.out.println("Usuário adicionado com sucesso!");
+        User user = new User(UUID.randomUUID(), login, cpf, nome, email, senha, Role.USER);
+
+        try {
+            userController.adicionarUsuario(user);
+            System.out.println("Usuário adicionado com sucesso!");
+        } catch (ValidacaoUsuarioException e) {
+            System.out.println("\nErros de validação:");
+            e.getErros().forEach(erro -> System.out.println("  - " + erro));
+        } catch (RepositorioException e) {
+            System.out.println("\nErro ao salvar usuário: " + e.getMessage());
+        }
     }
 
     private void listarUsuarios() {
-        List<User> usuarios = userController.listarUsuarios();
-        if (usuarios.isEmpty()) {
-            System.out.println("Nenhum usuário cadastrado.");
-            return;
-        }
-        System.out.println("\n--- Lista de Usuários ---");
-        for (User u : usuarios) {
-            System.out.printf("ID: %s | Nome: %s | CPF: %s | Email: %s | Perfil: %s%n",
-                    u.getId(), u.getName(), u.getCpf(), u.getEmail(), u.getRole());
+        try {
+            List<User> usuarios = userController.listarUsuarios();
+            if (usuarios.isEmpty()) {
+                System.out.println("Nenhum usuário cadastrado.");
+                return;
+            }
+            System.out.println("\n--- Lista de Usuários ---");
+            for (User u : usuarios) {
+                System.out.printf("ID: %s | Login: %s | Nome: %s | CPF: %s | Email: %s | Perfil: %s%n",
+                        u.getId(), u.getLogin(), u.getName(), u.getCpf(), u.getEmail(), u.getRole());
+            }
+        } catch (RepositorioException e) {
+            System.out.println("\nErro ao buscar usuários: " + e.getMessage());
         }
     }
 }

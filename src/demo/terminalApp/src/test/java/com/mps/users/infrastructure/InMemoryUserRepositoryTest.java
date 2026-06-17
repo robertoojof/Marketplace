@@ -23,7 +23,7 @@ class InMemoryUserRepositoryTest {
 
     @Test
     void deve_salvar_e_retornar_usuario() {
-        User usuario = new User(UUID.randomUUID(), "111.222.333-44", "Maria Souza", "maria@email.com", "senha", Role.ADMIN);
+        User usuario = new User(UUID.randomUUID(), "mariasouz", "111.222.333-44", "Maria Souza", "maria@email.com", "Senha@2024!", Role.ADMIN);
 
         repository.salvar(usuario);
         List<User> resultado = repository.buscarTodos();
@@ -34,11 +34,24 @@ class InMemoryUserRepositoryTest {
 
     @Test
     void buscarTodos_deve_retornar_lista_imutavel() {
-        repository.salvar(new User(UUID.randomUUID(), "000.000.000-00", "Teste", "t@t.com", "pw", Role.USER));
+        repository.salvar(new User(UUID.randomUUID(), "teste", "000.000.000-00", "Teste", "t@t.com", "Senha@2024!", Role.USER));
 
         List<User> resultado = repository.buscarTodos();
 
         assertThrows(UnsupportedOperationException.class, () -> resultado.add(
-                new User(UUID.randomUUID(), "999.999.999-99", "Invasor", "x@x.com", "pw", Role.USER)));
+                new User(UUID.randomUUID(), "invasor", "999.999.999-99", "Invasor", "x@x.com", "Senha@2024!", Role.USER)));
+    }
+
+    @Test
+    void deve_gerar_uuid_quando_id_nulo() {
+        User usuario = new User(null, "semid", "111.222.333-44", "Sem ID", "semid@email.com", "Senha@2024!", Role.USER);
+
+        repository.salvar(usuario);
+
+        assertEquals(1, repository.buscarTodos().size());
+        assertEquals("Sem ID", repository.buscarTodos().get(0).getName());
+        // UUID deve ter sido gerado pelo repositório
+        var id = repository.buscarTodos().get(0).getId();
+        assertEquals(36, id.toString().length());
     }
 }

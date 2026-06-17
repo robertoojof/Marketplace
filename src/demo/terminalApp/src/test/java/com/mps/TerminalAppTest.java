@@ -30,7 +30,8 @@ class TerminalAppTest {
 
     @Test
     void main_deve_encerrar_ao_receber_opcao_sair() {
-        System.setIn(new ByteArrayInputStream("7\n".getBytes()));
+        // "1\n" seleciona armazenamento em memória; "7\n" sai do menu principal
+        System.setIn(new ByteArrayInputStream("1\n7\n".getBytes()));
 
         TerminalApp.main(new String[]{});
 
