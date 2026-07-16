@@ -11,6 +11,8 @@ import org.junit.jupiter.api.Test;
 
 import com.mps.anuncios.domain.Anuncio;
 import com.mps.produtos.domain.Produto;
+import com.mps.shared.factory.InMemoryRepositoryFactory;
+import com.mps.shared.factory.RepositoryFactory;
 import com.mps.users.domain.Role;
 import com.mps.users.domain.User;
 
@@ -25,17 +27,18 @@ class AnuncioFacadeTest {
 
     @Test
     void getInstance_deve_retornar_sempre_a_mesma_instancia() {
-        AnuncioFacade a = AnuncioFacade.getInstance(false);
-        AnuncioFacade b = AnuncioFacade.getInstance(false);
+        AnuncioFacade a = AnuncioFacade.getInstance(new InMemoryRepositoryFactory());
+        AnuncioFacade b = AnuncioFacade.getInstance(new InMemoryRepositoryFactory());
 
         assertSame(a, b);
     }
 
     @Test
     void contarAnuncios_deve_contar_apenas_ativos() {
-        ProdutoFacade produtoFacade = ProdutoFacade.getInstance(false);
-        UserFacade userFacade = UserFacade.getInstance(false);
-        AnuncioFacade anuncioFacade = AnuncioFacade.getInstance(false);
+        RepositoryFactory factory = new InMemoryRepositoryFactory();
+        ProdutoFacade produtoFacade = ProdutoFacade.getInstance(factory);
+        UserFacade userFacade = UserFacade.getInstance(factory);
+        AnuncioFacade anuncioFacade = AnuncioFacade.getInstance(factory);
 
         Produto produto = new Produto(UUID.randomUUID(), "Sabonete Dove", "Sabonete hidratante", true);
         produtoFacade.adicionarProduto(produto);

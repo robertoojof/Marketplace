@@ -4,11 +4,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.mps.shared.factory.RepositoryFactory;
 import com.mps.users.application.UserService;
 import com.mps.users.domain.IUserRepository;
 import com.mps.users.domain.User;
-import com.mps.users.infrastructure.HibernateUserRepository;
-import com.mps.users.infrastructure.InMemoryUserRepository;
 import com.mps.users.presentation.controller.UserController;
 
 public final class UserFacade {
@@ -18,14 +17,14 @@ public final class UserFacade {
     private final IUserRepository userRepository;
     private final UserController userController;
 
-    private UserFacade(boolean usarBancoDeDados) {
-        this.userRepository = usarBancoDeDados ? new HibernateUserRepository() : new InMemoryUserRepository();
+    private UserFacade(RepositoryFactory factory) {
+        this.userRepository = factory.criarUserRepository();
         this.userController = new UserController(new UserService(userRepository));
     }
 
-    public static synchronized UserFacade getInstance(boolean usarBancoDeDados) {
+    public static synchronized UserFacade getInstance(RepositoryFactory factory) {
         if (instance == null) {
-            instance = new UserFacade(usarBancoDeDados);
+            instance = new UserFacade(factory);
         }
         return instance;
     }

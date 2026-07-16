@@ -17,10 +17,10 @@ public class TerminalApp {
         Scanner scanner = new Scanner(System.in);
         boolean usarBancoDeDados = selecionarArmazenamento(scanner);
 
-        UserFacade userFacade = UserFacade.getInstance(usarBancoDeDados);
-        ProdutoFacade produtoFacade = ProdutoFacade.getInstance(usarBancoDeDados);
-        AnuncioFacade anuncioFacade = AnuncioFacade.getInstance(usarBancoDeDados);
         FacadeSingletonController facade = FacadeSingletonController.getInstance(usarBancoDeDados);
+        UserFacade userFacade = UserFacade.getInstance();
+        ProdutoFacade produtoFacade = ProdutoFacade.getInstance();
+        AnuncioFacade anuncioFacade = AnuncioFacade.getInstance();
 
         UserView userView = new UserView(scanner, userFacade, facade);
         ProdutoView produtoView = new ProdutoView(scanner, produtoFacade);

@@ -2,6 +2,10 @@ package com.mps.shared.facade;
 
 import java.util.UUID;
 
+import com.mps.shared.factory.HibernateRepositoryFactory;
+import com.mps.shared.factory.InMemoryRepositoryFactory;
+import com.mps.shared.factory.RepositoryFactory;
+
 public final class FacadeSingletonController {
 
     private static FacadeSingletonController instance;
@@ -11,9 +15,12 @@ public final class FacadeSingletonController {
 
     public static synchronized FacadeSingletonController getInstance(boolean usarBancoDeDados) {
         if (instance == null) {
-            UserFacade.getInstance(usarBancoDeDados);
-            ProdutoFacade.getInstance(usarBancoDeDados);
-            AnuncioFacade.getInstance(usarBancoDeDados);
+            RepositoryFactory factory = usarBancoDeDados
+                    ? new HibernateRepositoryFactory()
+                    : new InMemoryRepositoryFactory();
+            UserFacade.getInstance(factory);
+            ProdutoFacade.getInstance(factory);
+            AnuncioFacade.getInstance(factory);
             instance = new FacadeSingletonController();
         }
         return instance;

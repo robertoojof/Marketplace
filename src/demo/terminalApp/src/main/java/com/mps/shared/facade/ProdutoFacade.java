@@ -7,9 +7,8 @@ import java.util.UUID;
 import com.mps.produtos.application.ProdutoService;
 import com.mps.produtos.domain.IProdutoRepository;
 import com.mps.produtos.domain.Produto;
-import com.mps.produtos.infrastructure.HibernateProdutoRepository;
-import com.mps.produtos.infrastructure.InMemoryProdutoRepository;
 import com.mps.produtos.presentation.controller.ProdutoController;
+import com.mps.shared.factory.RepositoryFactory;
 
 public final class ProdutoFacade {
 
@@ -18,14 +17,14 @@ public final class ProdutoFacade {
     private final IProdutoRepository produtoRepository;
     private final ProdutoController produtoController;
 
-    private ProdutoFacade(boolean usarBancoDeDados) {
-        this.produtoRepository = usarBancoDeDados ? new HibernateProdutoRepository() : new InMemoryProdutoRepository();
+    private ProdutoFacade(RepositoryFactory factory) {
+        this.produtoRepository = factory.criarProdutoRepository();
         this.produtoController = new ProdutoController(new ProdutoService(produtoRepository));
     }
 
-    public static synchronized ProdutoFacade getInstance(boolean usarBancoDeDados) {
+    public static synchronized ProdutoFacade getInstance(RepositoryFactory factory) {
         if (instance == null) {
-            instance = new ProdutoFacade(usarBancoDeDados);
+            instance = new ProdutoFacade(factory);
         }
         return instance;
     }

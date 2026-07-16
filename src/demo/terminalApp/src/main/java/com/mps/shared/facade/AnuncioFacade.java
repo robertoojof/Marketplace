@@ -7,9 +7,8 @@ import java.util.UUID;
 import com.mps.anuncios.application.AnuncioService;
 import com.mps.anuncios.domain.Anuncio;
 import com.mps.anuncios.domain.IAnuncioRepository;
-import com.mps.anuncios.infrastructure.HibernateAnuncioRepository;
-import com.mps.anuncios.infrastructure.InMemoryAnuncioRepository;
 import com.mps.anuncios.presentation.controller.AnuncioController;
+import com.mps.shared.factory.RepositoryFactory;
 
 public final class AnuncioFacade {
 
@@ -17,18 +16,16 @@ public final class AnuncioFacade {
 
     private final AnuncioController anuncioController;
 
-    private AnuncioFacade(boolean usarBancoDeDados) {
-        IAnuncioRepository anuncioRepository = usarBancoDeDados
-                ? new HibernateAnuncioRepository()
-                : new InMemoryAnuncioRepository();
+    private AnuncioFacade(RepositoryFactory factory) {
+        IAnuncioRepository anuncioRepository = factory.criarAnuncioRepository();
         this.anuncioController = new AnuncioController(new AnuncioService(anuncioRepository,
-                ProdutoFacade.getInstance(usarBancoDeDados).getRepository(),
-                UserFacade.getInstance(usarBancoDeDados).getRepository()));
+                ProdutoFacade.getInstance(factory).getRepository(),
+                UserFacade.getInstance(factory).getRepository()));
     }
 
-    public static synchronized AnuncioFacade getInstance(boolean usarBancoDeDados) {
+    public static synchronized AnuncioFacade getInstance(RepositoryFactory factory) {
         if (instance == null) {
-            instance = new AnuncioFacade(usarBancoDeDados);
+            instance = new AnuncioFacade(factory);
         }
         return instance;
     }
