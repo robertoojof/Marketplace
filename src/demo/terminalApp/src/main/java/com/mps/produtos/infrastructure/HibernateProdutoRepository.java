@@ -12,8 +12,12 @@ import com.mps.produtos.domain.IProdutoRepository;
 import com.mps.produtos.domain.Produto;
 import com.mps.shared.exception.RepositorioException;
 import com.mps.shared.infrastructure.HibernateSessionFactory;
+import com.mps.shared.logging.AppLoggerFactory;
+import com.mps.shared.logging.Logger;
 
 public class HibernateProdutoRepository implements IProdutoRepository {
+
+    private static final Logger LOGGER = AppLoggerFactory.getLogger(HibernateProdutoRepository.class);
 
     private final SessionFactory sessionFactory;
 
@@ -30,6 +34,7 @@ public class HibernateProdutoRepository implements IProdutoRepository {
             tx.commit();
         } catch (Exception e) {
             if (tx != null) tx.rollback();
+            LOGGER.error("Erro ao salvar produto no banco de dados", e);
             throw new RepositorioException("Erro ao salvar produto no banco de dados", e);
         }
     }
@@ -39,6 +44,7 @@ public class HibernateProdutoRepository implements IProdutoRepository {
         try (Session session = sessionFactory.openSession()) {
             return session.createQuery("from Produto", Produto.class).list();
         } catch (Exception e) {
+            LOGGER.error("Erro ao buscar produtos do banco de dados", e);
             throw new RepositorioException("Erro ao buscar produtos do banco de dados", e);
         }
     }
@@ -48,6 +54,7 @@ public class HibernateProdutoRepository implements IProdutoRepository {
         try (Session session = sessionFactory.openSession()) {
             return Optional.ofNullable(session.find(Produto.class, id));
         } catch (Exception e) {
+            LOGGER.error("Erro ao buscar produto no banco de dados", e);
             throw new RepositorioException("Erro ao buscar produto no banco de dados", e);
         }
     }
@@ -62,6 +69,7 @@ public class HibernateProdutoRepository implements IProdutoRepository {
             return atualizado;
         } catch (Exception e) {
             if (tx != null) tx.rollback();
+            LOGGER.error("Erro ao atualizar produto no banco de dados", e);
             throw new RepositorioException("Erro ao atualizar produto no banco de dados", e);
         }
     }
@@ -88,9 +96,11 @@ public class HibernateProdutoRepository implements IProdutoRepository {
             tx.commit();
         } catch (RepositorioException e) {
             if (tx != null) tx.rollback();
+            LOGGER.error(mensagemErro, e);
             throw e;
         } catch (Exception e) {
             if (tx != null) tx.rollback();
+            LOGGER.error(mensagemErro, e);
             throw new RepositorioException(mensagemErro, e);
         }
     }

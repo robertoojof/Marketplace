@@ -10,10 +10,14 @@ import org.hibernate.Transaction;
 
 import com.mps.shared.exception.RepositorioException;
 import com.mps.shared.infrastructure.HibernateSessionFactory;
+import com.mps.shared.logging.AppLoggerFactory;
+import com.mps.shared.logging.Logger;
 import com.mps.users.domain.IUserRepository;
 import com.mps.users.domain.User;
 
 public class HibernateUserRepository implements IUserRepository {
+
+    private static final Logger LOGGER = AppLoggerFactory.getLogger(HibernateUserRepository.class);
 
     private final SessionFactory sessionFactory;
 
@@ -30,6 +34,7 @@ public class HibernateUserRepository implements IUserRepository {
             tx.commit();
         } catch (Exception e) {
             if (tx != null) tx.rollback();
+            LOGGER.error("Erro ao salvar usuário no banco de dados", e);
             throw new RepositorioException("Erro ao salvar usuário no banco de dados", e);
         }
     }
@@ -39,6 +44,7 @@ public class HibernateUserRepository implements IUserRepository {
         try (Session session = sessionFactory.openSession()) {
             return session.createQuery("from User", User.class).list();
         } catch (Exception e) {
+            LOGGER.error("Erro ao buscar usuários do banco de dados", e);
             throw new RepositorioException("Erro ao buscar usuários do banco de dados", e);
         }
     }
@@ -48,6 +54,7 @@ public class HibernateUserRepository implements IUserRepository {
         try (Session session = sessionFactory.openSession()) {
             return Optional.ofNullable(session.find(User.class, id));
         } catch (Exception e) {
+            LOGGER.error("Erro ao buscar usuário no banco de dados", e);
             throw new RepositorioException("Erro ao buscar usuário no banco de dados", e);
         }
     }
@@ -62,6 +69,7 @@ public class HibernateUserRepository implements IUserRepository {
             return atualizado;
         } catch (Exception e) {
             if (tx != null) tx.rollback();
+            LOGGER.error("Erro ao atualizar usuário no banco de dados", e);
             throw new RepositorioException("Erro ao atualizar usuário no banco de dados", e);
         }
     }
@@ -73,6 +81,7 @@ public class HibernateUserRepository implements IUserRepository {
                     .setParameter("login", login)
                     .uniqueResultOptional();
         } catch (Exception e) {
+            LOGGER.error("Erro ao buscar usuário no banco de dados", e);
             throw new RepositorioException("Erro ao buscar usuário no banco de dados", e);
         }
     }
@@ -99,9 +108,11 @@ public class HibernateUserRepository implements IUserRepository {
             tx.commit();
         } catch (RepositorioException e) {
             if (tx != null) tx.rollback();
+            LOGGER.error(mensagemErro, e);
             throw e;
         } catch (Exception e) {
             if (tx != null) tx.rollback();
+            LOGGER.error(mensagemErro, e);
             throw new RepositorioException(mensagemErro, e);
         }
     }

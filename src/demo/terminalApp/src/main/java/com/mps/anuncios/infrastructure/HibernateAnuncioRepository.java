@@ -12,8 +12,12 @@ import com.mps.anuncios.domain.Anuncio;
 import com.mps.anuncios.domain.IAnuncioRepository;
 import com.mps.shared.exception.RepositorioException;
 import com.mps.shared.infrastructure.HibernateSessionFactory;
+import com.mps.shared.logging.AppLoggerFactory;
+import com.mps.shared.logging.Logger;
 
 public class HibernateAnuncioRepository implements IAnuncioRepository {
+
+    private static final Logger LOGGER = AppLoggerFactory.getLogger(HibernateAnuncioRepository.class);
 
     private final SessionFactory sessionFactory;
 
@@ -30,6 +34,7 @@ public class HibernateAnuncioRepository implements IAnuncioRepository {
             tx.commit();
         } catch (Exception e) {
             if (tx != null) tx.rollback();
+            LOGGER.error("Erro ao salvar anúncio no banco de dados", e);
             throw new RepositorioException("Erro ao salvar anúncio no banco de dados", e);
         }
     }
@@ -39,6 +44,7 @@ public class HibernateAnuncioRepository implements IAnuncioRepository {
         try (Session session = sessionFactory.openSession()) {
             return session.createQuery("from Anuncio", Anuncio.class).list();
         } catch (Exception e) {
+            LOGGER.error("Erro ao buscar anúncios do banco de dados", e);
             throw new RepositorioException("Erro ao buscar anúncios do banco de dados", e);
         }
     }
@@ -48,6 +54,7 @@ public class HibernateAnuncioRepository implements IAnuncioRepository {
         try (Session session = sessionFactory.openSession()) {
             return Optional.ofNullable(session.find(Anuncio.class, id));
         } catch (Exception e) {
+            LOGGER.error("Erro ao buscar anúncio no banco de dados", e);
             throw new RepositorioException("Erro ao buscar anúncio no banco de dados", e);
         }
     }
@@ -59,6 +66,7 @@ public class HibernateAnuncioRepository implements IAnuncioRepository {
                     .setParameter("vendedorId", vendedorId)
                     .list();
         } catch (Exception e) {
+            LOGGER.error("Erro ao buscar anúncios do vendedor no banco de dados", e);
             throw new RepositorioException("Erro ao buscar anúncios do vendedor no banco de dados", e);
         }
     }
@@ -73,6 +81,7 @@ public class HibernateAnuncioRepository implements IAnuncioRepository {
             return atualizado;
         } catch (Exception e) {
             if (tx != null) tx.rollback();
+            LOGGER.error("Erro ao atualizar anúncio no banco de dados", e);
             throw new RepositorioException("Erro ao atualizar anúncio no banco de dados", e);
         }
     }
@@ -98,6 +107,7 @@ public class HibernateAnuncioRepository implements IAnuncioRepository {
             tx.commit();
         } catch (Exception e) {
             if (tx != null) tx.rollback();
+            LOGGER.error("Erro ao desativar anúncios do vendedor no banco de dados", e);
             throw new RepositorioException("Erro ao desativar anúncios do vendedor no banco de dados", e);
         }
     }
@@ -114,9 +124,11 @@ public class HibernateAnuncioRepository implements IAnuncioRepository {
             tx.commit();
         } catch (RepositorioException e) {
             if (tx != null) tx.rollback();
+            LOGGER.error(mensagemErro, e);
             throw e;
         } catch (Exception e) {
             if (tx != null) tx.rollback();
+            LOGGER.error(mensagemErro, e);
             throw new RepositorioException(mensagemErro, e);
         }
     }
