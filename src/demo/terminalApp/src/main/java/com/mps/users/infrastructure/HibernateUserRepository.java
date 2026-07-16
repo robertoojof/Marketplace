@@ -3,7 +3,9 @@ package com.mps.users.infrastructure;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
+import java.util.UUID;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -62,6 +64,49 @@ public class HibernateUserRepository implements IUserRepository {
             return session.createQuery("from User", User.class).list();
         } catch (Exception e) {
             throw new RepositorioException("Erro ao buscar usuários do banco de dados", e);
+        }
+    }
+
+    @Override
+    public Optional<User> buscarPorId(UUID id) {
+        try (Session session = sessionFactory.openSession()) {
+            return Optional.ofNullable(session.find(User.class, id));
+        } catch (Exception e) {
+            throw new RepositorioException("Erro ao buscar usuário no banco de dados", e);
+        }
+    }
+
+    @Override
+    public User atualizar(User user) {
+        Transaction tx = null;
+        try (Session session = sessionFactory.openSession()) {
+            tx = session.beginTransaction();
+            User atualizado = session.merge(user);
+            tx.commit();
+            return atualizado;
+        } catch (Exception e) {
+            if (tx != null) tx.rollback();
+            throw new RepositorioException("Erro ao atualizar usuário no banco de dados", e);
+        }
+    }
+
+    @Override
+    public void deletar(UUID id) {
+        Transaction tx = null;
+        try (Session session = sessionFactory.openSession()) {
+            tx = session.beginTransaction();
+            User usuario = session.find(User.class, id);
+            if (usuario == null) {
+                throw new RepositorioException("Usuário não encontrado");
+            }
+            usuario.setAtivo(false);
+            tx.commit();
+        } catch (RepositorioException e) {
+            if (tx != null) tx.rollback();
+            throw e;
+        } catch (Exception e) {
+            if (tx != null) tx.rollback();
+            throw new RepositorioException("Erro ao remover usuário no banco de dados", e);
         }
     }
 

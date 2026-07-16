@@ -2,6 +2,7 @@ package com.mps.users.view;
 
 import java.util.InputMismatchException;
 import java.util.List;
+import java.util.Optional;
 import java.util.Scanner;
 import java.util.UUID;
 
@@ -29,6 +30,9 @@ public class UserView {
                 System.out.println("=============================");
                 System.out.println("  1. Adicionar usuário");
                 System.out.println("  2. Listar todos os usuários");
+                System.out.println("  3. Buscar usuário por ID");
+                System.out.println("  4. Atualizar usuário");
+                System.out.println("  5. Remover usuário");
                 System.out.println("  7. Voltar");
                 System.out.println("=============================");
                 System.out.print("Digite a sua escolha: ");
@@ -39,6 +43,9 @@ public class UserView {
                 switch (in) {
                     case 1 -> adicionarUsuario();
                     case 2 -> listarUsuarios();
+                    case 3 -> buscarUsuarioPorId();
+                    case 4 -> atualizarUsuario();
+                    case 5 -> removerUsuario();
                     case 7 -> {
                         System.out.println("Saindo...");
                         return;
@@ -64,7 +71,7 @@ public class UserView {
         System.out.print("Senha: ");
         String senha = scanner.nextLine();
 
-        User user = new User(UUID.randomUUID(), login, cpf, nome, email, senha, Role.USER);
+        User user = new User(UUID.randomUUID(), login, cpf, nome, email, senha, Role.USER, true);
 
         try {
             userController.adicionarUsuario(user);
@@ -86,11 +93,105 @@ public class UserView {
             }
             System.out.println("\n--- Lista de Usuários ---");
             for (User u : usuarios) {
-                System.out.printf("ID: %s | Login: %s | Nome: %s | CPF: %s | Email: %s | Perfil: %s%n",
-                        u.getId(), u.getLogin(), u.getName(), u.getCpf(), u.getEmail(), u.getRole());
+                imprimirUsuario(u);
             }
         } catch (RepositorioException e) {
             System.out.println("\nErro ao buscar usuários: " + e.getMessage());
         }
+    }
+
+    private void buscarUsuarioPorId() {
+        UUID id = lerUuid();
+        if (id == null) return;
+
+        try {
+            Optional<User> usuario = userController.buscarUsuarioPorId(id);
+            if (usuario.isEmpty()) {
+                System.out.println("Usuário não encontrado.");
+                return;
+            }
+            System.out.println("\n--- Usuário encontrado ---");
+            imprimirUsuario(usuario.get());
+        } catch (RepositorioException e) {
+            System.out.println("\nErro ao buscar usuário: " + e.getMessage());
+        }
+    }
+
+    private void atualizarUsuario() {
+        UUID id = lerUuid();
+        if (id == null) return;
+
+        try {
+            Optional<User> existente = userController.buscarUsuarioPorId(id);
+            if (existente.isEmpty()) {
+                System.out.println("Usuário não encontrado.");
+                return;
+            }
+            User usuario = existente.get();
+
+            System.out.printf("Login [%s]: ", usuario.getLogin());
+            String login = scanner.nextLine();
+            if (!login.isBlank()) usuario.setLogin(login);
+
+            System.out.printf("Nome [%s]: ", usuario.getName());
+            String nome = scanner.nextLine();
+            if (!nome.isBlank()) usuario.setName(nome);
+
+            System.out.printf("CPF [%s]: ", usuario.getCpf());
+            String cpf = scanner.nextLine();
+            if (!cpf.isBlank()) usuario.setCpf(cpf);
+
+            System.out.printf("Email [%s]: ", usuario.getEmail());
+            String email = scanner.nextLine();
+            if (!email.isBlank()) usuario.setEmail(email);
+
+            System.out.print("Senha (deixe em branco para manter a atual): ");
+            String senha = scanner.nextLine();
+            if (!senha.isBlank()) usuario.setPassword(senha);
+
+            userController.atualizarUsuario(usuario);
+            System.out.println("Usuário atualizado com sucesso!");
+        } catch (ValidacaoUsuarioException e) {
+            System.out.println("\nErros de validação:");
+            e.getErros().forEach(erro -> System.out.println("  - " + erro));
+        } catch (RepositorioException e) {
+            System.out.println("\nErro ao atualizar usuário: " + e.getMessage());
+        }
+    }
+
+    private void removerUsuario() {
+        UUID id = lerUuid();
+        if (id == null) return;
+
+        System.out.print("Confirma a remoção do usuário? (s/n): ");
+        String confirmacao = scanner.nextLine();
+        if (!confirmacao.equalsIgnoreCase("s")) {
+            System.out.println("Remoção cancelada.");
+            return;
+        }
+
+        try {
+            userController.removerUsuario(id);
+            System.out.println("Usuário removido com sucesso!");
+        } catch (RepositorioException e) {
+            System.out.println("\nErro ao remover usuário: " + e.getMessage());
+        }
+    }
+
+    private UUID lerUuid() {
+        System.out.print("ID do usuário: ");
+        String entrada = scanner.nextLine();
+        try {
+            return UUID.fromString(entrada);
+        } catch (IllegalArgumentException e) {
+            System.out.println("ID inválido.");
+            return null;
+        }
+    }
+
+    private void imprimirUsuario(User u) {
+        System.out.printf("ID: %s | Login: %s | Nome: %s | CPF: %s | Email: %s | Perfil: %s | Status: %s%n",
+                u.getId(), u.getLogin(), u.getName(), u.getCpf(), u.getEmail(), u.getRole(),
+                u.isAtivo() ? "Ativo" : "Inativo");
     }
 }

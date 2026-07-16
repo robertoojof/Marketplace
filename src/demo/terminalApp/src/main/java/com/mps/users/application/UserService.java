@@ -1,7 +1,9 @@
 package com.mps.users.application;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.hibernate.validator.messageinterpolation.ParameterMessageInterpolator;
@@ -30,6 +32,28 @@ public class UserService {
     }
 
     public void adicionarUsuario(User user) {
+        validar(user);
+        userRepository.salvar(user);
+    }
+
+    public List<User> listarUsuarios() {
+        return userRepository.buscarTodos();
+    }
+
+    public Optional<User> buscarUsuarioPorId(UUID id) {
+        return userRepository.buscarPorId(id);
+    }
+
+    public User atualizarUsuario(User user) {
+        validar(user);
+        return userRepository.atualizar(user);
+    }
+
+    public void removerUsuario(UUID id) {
+        userRepository.deletar(id);
+    }
+
+    private void validar(User user) {
         Set<ConstraintViolation<User>> violations = validator.validate(user);
         if (!violations.isEmpty()) {
             List<String> erros = violations.stream()
@@ -38,10 +62,5 @@ public class UserService {
                     .collect(Collectors.toList());
             throw new ValidacaoUsuarioException(erros);
         }
-        userRepository.salvar(user);
-    }
-
-    public List<User> listarUsuarios() {
-        return userRepository.buscarTodos();
     }
 }

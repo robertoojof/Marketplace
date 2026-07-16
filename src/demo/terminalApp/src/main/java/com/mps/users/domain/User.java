@@ -55,4 +55,7 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
     private Role role;
+
+    @Column(name = "ativo", nullable = false)
+    private boolean ativo;
 }
