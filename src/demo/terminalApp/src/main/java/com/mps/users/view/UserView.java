@@ -6,6 +6,7 @@ import java.util.Optional;
 import java.util.Scanner;
 import java.util.UUID;
 
+import com.mps.shared.exception.AutorizacaoException;
 import com.mps.shared.exception.RepositorioException;
 import com.mps.users.domain.Role;
 import com.mps.users.domain.User;
@@ -33,6 +34,7 @@ public class UserView {
                 System.out.println("  3. Buscar usuário por ID");
                 System.out.println("  4. Atualizar usuário");
                 System.out.println("  5. Remover usuário");
+                System.out.println("  6. Reativar usuário");
                 System.out.println("  7. Voltar");
                 System.out.println("=============================");
                 System.out.print("Digite a sua escolha: ");
@@ -46,6 +48,7 @@ public class UserView {
                     case 3 -> buscarUsuarioPorId();
                     case 4 -> atualizarUsuario();
                     case 5 -> removerUsuario();
+                    case 6 -> reativarUsuario();
                     case 7 -> {
                         System.out.println("Saindo...");
                         return;
@@ -175,6 +178,25 @@ public class UserView {
             System.out.println("Usuário removido com sucesso!");
         } catch (RepositorioException e) {
             System.out.println("\nErro ao remover usuário: " + e.getMessage());
+        }
+    }
+
+    private void reativarUsuario() {
+        UUID id = lerUuid();
+        if (id == null) return;
+
+        System.out.print("Seu login (autorização): ");
+        String loginAutorizador = scanner.nextLine();
+        System.out.print("Sua senha: ");
+        String senhaAutorizador = scanner.nextLine();
+
+        try {
+            userController.reativarUsuario(id, loginAutorizador, senhaAutorizador);
+            System.out.println("Usuário reativado com sucesso!");
+        } catch (AutorizacaoException e) {
+            System.out.println("\nErro de autorização: " + e.getMessage());
+        } catch (RepositorioException e) {
+            System.out.println("\nErro ao reativar usuário: " + e.getMessage());
         }
     }
 

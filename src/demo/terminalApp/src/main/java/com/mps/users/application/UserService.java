@@ -8,7 +8,9 @@ import java.util.stream.Collectors;
 
 import org.hibernate.validator.messageinterpolation.ParameterMessageInterpolator;
 
+import com.mps.shared.exception.AutorizacaoException;
 import com.mps.users.domain.IUserRepository;
+import com.mps.users.domain.Role;
 import com.mps.users.domain.User;
 import com.mps.users.domain.exception.ValidacaoUsuarioException;
 
@@ -44,6 +46,10 @@ public class UserService {
         return userRepository.buscarPorId(id);
     }
 
+    public Optional<User> buscarUsuarioPorLogin(String login) {
+        return userRepository.buscarPorLogin(login);
+    }
+
     public User atualizarUsuario(User user) {
         validar(user);
         return userRepository.atualizar(user);
@@ -51,6 +57,20 @@ public class UserService {
 
     public void removerUsuario(UUID id) {
         userRepository.deletar(id);
+    }
+
+    public void reativarUsuario(UUID idAlvo, String loginAutorizador, String senhaAutorizador) {
+        User autorizador = userRepository.buscarPorLogin(loginAutorizador)
+                .filter(u -> u.getPassword().equals(senhaAutorizador))
+                .orElseThrow(() -> new AutorizacaoException("Credenciais inválidas"));
+
+        boolean ehOProprioUsuario = autorizador.getId().equals(idAlvo);
+        boolean ehAdmin = autorizador.getRole() == Role.ADMIN;
+        if (!ehOProprioUsuario && !ehAdmin) {
+            throw new AutorizacaoException("Você não tem permissão para reativar este usuário");
+        }
+
+        userRepository.reativar(idAlvo);
     }
 
     private void validar(User user) {

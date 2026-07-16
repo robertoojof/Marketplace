@@ -12,6 +12,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.mps.shared.exception.AutorizacaoException;
 import com.mps.shared.exception.RepositorioException;
 import com.mps.users.domain.Role;
 import com.mps.users.domain.User;
@@ -127,5 +128,59 @@ class UserServiceTest {
     @Test
     void removerUsuario_deve_lancar_excecao_quando_nao_existe() {
         assertThrows(RepositorioException.class, () -> userService.removerUsuario(UUID.randomUUID()));
+    }
+
+    @Test
+    void reativarUsuario_deve_funcionar_quando_e_o_proprio_usuario() {
+        User usuario = new User(UUID.randomUUID(), "joaosilva", "123.456.789-00", "João Silva", "joao@email.com", "Senha@2024!", Role.USER, true);
+        userService.adicionarUsuario(usuario);
+        userService.removerUsuario(usuario.getId());
+
+        userService.reativarUsuario(usuario.getId(), "joaosilva", "Senha@2024!");
+
+        assertTrue(userService.buscarUsuarioPorId(usuario.getId()).get().isAtivo());
+    }
+
+    @Test
+    void reativarUsuario_deve_funcionar_quando_autorizador_e_admin() {
+        User usuario = new User(UUID.randomUUID(), "joaosilva", "123.456.789-00", "João Silva", "joao@email.com", "Senha@2024!", Role.USER, true);
+        User admin = new User(UUID.randomUUID(), "adminuser", "111.111.111-11", "Admin", "admin@email.com", "Senha@2024!", Role.ADMIN, true);
+        userService.adicionarUsuario(usuario);
+        userService.adicionarUsuario(admin);
+        userService.removerUsuario(usuario.getId());
+
+        userService.reativarUsuario(usuario.getId(), "adminuser", "Senha@2024!");
+
+        assertTrue(userService.buscarUsuarioPorId(usuario.getId()).get().isAtivo());
+    }
+
+    @Test
+    void reativarUsuario_deve_lancar_excecao_quando_autorizador_nao_e_admin_nem_o_proprio() {
+        User usuario = new User(UUID.randomUUID(), "joaosilva", "123.456.789-00", "João Silva", "joao@email.com", "Senha@2024!", Role.USER, true);
+        User outro = new User(UUID.randomUUID(), "outrouser", "222.222.222-22", "Outro", "outro@email.com", "Senha@2024!", Role.USER, true);
+        userService.adicionarUsuario(usuario);
+        userService.adicionarUsuario(outro);
+        userService.removerUsuario(usuario.getId());
+
+        assertThrows(AutorizacaoException.class,
+                () -> userService.reativarUsuario(usuario.getId(), "outrouser", "Senha@2024!"));
+    }
+
+    @Test
+    void reativarUsuario_deve_lancar_excecao_quando_credenciais_invalidas() {
+        User usuario = new User(UUID.randomUUID(), "joaosilva", "123.456.789-00", "João Silva", "joao@email.com", "Senha@2024!", Role.USER, true);
+        userService.adicionarUsuario(usuario);
+        userService.removerUsuario(usuario.getId());
+
+        assertThrows(AutorizacaoException.class,
+                () -> userService.reativarUsuario(usuario.getId(), "joaosilva", "SenhaErrada@1"));
+    }
+
+    @Test
+    void buscarUsuarioPorLogin_deve_retornar_usuario_quando_existe() {
+        User usuario = new User(UUID.randomUUID(), "joaosilva", "123.456.789-00", "João Silva", "joao@email.com", "Senha@2024!", Role.USER, true);
+        userService.adicionarUsuario(usuario);
+
+        assertTrue(userService.buscarUsuarioPorLogin("joaosilva").isPresent());
     }
 }

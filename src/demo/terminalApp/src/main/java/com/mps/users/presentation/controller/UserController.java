@@ -27,11 +27,19 @@ public class UserController {
         return userService.buscarUsuarioPorId(id);
     }
 
+    public Optional<User> buscarUsuarioPorLogin(String login) {
+        return userService.buscarUsuarioPorLogin(login);
+    }
+
     public User atualizarUsuario(User user) {
         return userService.atualizarUsuario(user);
     }
 
     public void removerUsuario(UUID id) {
         userService.removerUsuario(id);
+    }
+
+    public void reativarUsuario(UUID idAlvo, String loginAutorizador, String senhaAutorizador) {
+        userService.reativarUsuario(idAlvo, loginAutorizador, senhaAutorizador);
     }
 }

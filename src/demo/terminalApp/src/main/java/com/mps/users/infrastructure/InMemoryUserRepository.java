@@ -41,9 +41,22 @@ public class InMemoryUserRepository implements IUserRepository {
     }
 
     @Override
+    public Optional<User> buscarPorLogin(String login) {
+        return usuarios.stream()
+                .filter(u -> u.getLogin().equals(login))
+                .findFirst();
+    }
+
+    @Override
     public void deletar(UUID id) {
         User usuario = usuarios.get(indiceDoUsuario(id));
         usuario.setAtivo(false);
+    }
+
+    @Override
+    public void reativar(UUID id) {
+        User usuario = usuarios.get(indiceDoUsuario(id));
+        usuario.setAtivo(true);
     }
 
     private int indiceDoUsuario(UUID id) {

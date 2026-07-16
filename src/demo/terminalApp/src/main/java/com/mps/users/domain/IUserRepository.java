@@ -8,6 +8,8 @@ public interface IUserRepository {
     void salvar(User user);
     List<User> buscarTodos();
     Optional<User> buscarPorId(UUID id);
+    Optional<User> buscarPorLogin(String login);
     User atualizar(User user);
     void deletar(UUID id);
+    void reativar(UUID id);
 }

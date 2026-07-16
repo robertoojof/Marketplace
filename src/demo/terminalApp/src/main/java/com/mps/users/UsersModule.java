@@ -11,12 +11,16 @@ import com.mps.users.view.UserView;
 
 public class UsersModule {
 
-    public static UserView create(Scanner scanner, boolean usarBancoDeDados) {
+    public record Bundle(IUserRepository repository, UserController controller, UserView view) {
+    }
+
+    public static Bundle create(Scanner scanner, boolean usarBancoDeDados) {
         IUserRepository repository = usarBancoDeDados
                 ? new HibernateUserRepository()
                 : new InMemoryUserRepository();
         UserService service = new UserService(repository);
         UserController controller = new UserController(service);
-        return new UserView(scanner, controller);
+        UserView view = new UserView(scanner, controller);
+        return new Bundle(repository, controller, view);
     }
 }

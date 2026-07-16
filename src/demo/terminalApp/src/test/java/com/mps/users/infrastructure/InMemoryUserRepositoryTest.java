@@ -111,4 +111,36 @@ class InMemoryUserRepositoryTest {
     void deletar_deve_lancar_excecao_quando_usuario_nao_existe() {
         assertThrows(RepositorioException.class, () -> repository.deletar(UUID.randomUUID()));
     }
+
+    @Test
+    void buscarPorLogin_deve_retornar_usuario_quando_existe() {
+        User usuario = new User(UUID.randomUUID(), "mariasouz", "111.222.333-44", "Maria Souza", "maria@email.com", "Senha@2024!", Role.ADMIN, true);
+        repository.salvar(usuario);
+
+        Optional<User> resultado = repository.buscarPorLogin("mariasouz");
+
+        assertTrue(resultado.isPresent());
+        assertEquals("Maria Souza", resultado.get().getName());
+    }
+
+    @Test
+    void buscarPorLogin_deve_retornar_vazio_quando_nao_existe() {
+        assertTrue(repository.buscarPorLogin("inexistente").isEmpty());
+    }
+
+    @Test
+    void reativar_deve_marcar_usuario_como_ativo() {
+        User usuario = new User(UUID.randomUUID(), "mariasouz", "111.222.333-44", "Maria Souza", "maria@email.com", "Senha@2024!", Role.ADMIN, true);
+        repository.salvar(usuario);
+        repository.deletar(usuario.getId());
+
+        repository.reativar(usuario.getId());
+
+        assertTrue(repository.buscarPorId(usuario.getId()).get().isAtivo());
+    }
+
+    @Test
+    void reativar_deve_lancar_excecao_quando_usuario_nao_existe() {
+        assertThrows(RepositorioException.class, () -> repository.reativar(UUID.randomUUID()));
+    }
 }
