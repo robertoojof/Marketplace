@@ -1,9 +1,13 @@
 package com.mps.shared.facade;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.mps.acessos.domain.AcessoLog;
+import com.mps.acessos.domain.IAcessoLogRepository;
+import com.mps.acessos.domain.TipoAcesso;
 import com.mps.shared.factory.RepositoryFactory;
 import com.mps.users.application.UserService;
 import com.mps.users.domain.IUserRepository;
@@ -15,10 +19,12 @@ public final class UserFacade {
     private static UserFacade instance;
 
     private final IUserRepository userRepository;
+    private final IAcessoLogRepository acessoLogRepository;
     private final UserController userController;
 
     private UserFacade(RepositoryFactory factory) {
         this.userRepository = factory.criarUserRepository();
+        this.acessoLogRepository = factory.criarAcessoLogRepository();
         this.userController = new UserController(new UserService(userRepository));
     }
 
@@ -46,6 +52,7 @@ public final class UserFacade {
 
     public void adicionarUsuario(User user) {
         userController.adicionarUsuario(user);
+        registrarAcesso(user.getId(), TipoAcesso.CRIACAO);
     }
 
     public List<User> listarUsuarios() {
@@ -53,7 +60,9 @@ public final class UserFacade {
     }
 
     public Optional<User> buscarUsuarioPorId(UUID id) {
-        return userController.buscarUsuarioPorId(id);
+        Optional<User> usuario = userController.buscarUsuarioPorId(id);
+        usuario.ifPresent(u -> registrarAcesso(u.getId(), TipoAcesso.BUSCA));
+        return usuario;
     }
 
     public Optional<User> buscarUsuarioPorLogin(String login) {
@@ -61,18 +70,30 @@ public final class UserFacade {
     }
 
     public User atualizarUsuario(User user) {
-        return userController.atualizarUsuario(user);
+        User atualizado = userController.atualizarUsuario(user);
+        registrarAcesso(atualizado.getId(), TipoAcesso.ATUALIZACAO);
+        return atualizado;
     }
 
     public void removerUsuario(UUID id) {
         userController.removerUsuario(id);
+        registrarAcesso(id, TipoAcesso.REMOCAO);
     }
 
     public void reativarUsuario(UUID idAlvo, String loginAutorizador, String senhaAutorizador) {
         userController.reativarUsuario(idAlvo, loginAutorizador, senhaAutorizador);
+        registrarAcesso(idAlvo, TipoAcesso.REATIVACAO);
     }
 
     public int contarUsuarios() {
         return (int) listarUsuarios().stream().filter(User::isAtivo).count();
+    }
+
+    public List<AcessoLog> listarAcessos() {
+        return acessoLogRepository.buscarTodos();
+    }
+
+    private void registrarAcesso(UUID usuarioId, TipoAcesso acao) {
+        acessoLogRepository.salvar(new AcessoLog(UUID.randomUUID(), usuarioId, acao, Instant.now()));
     }
 }

@@ -5,6 +5,7 @@ import java.util.Scanner;
 
 import com.mps.anuncios.view.AnuncioView;
 import com.mps.produtos.view.ProdutoView;
+import com.mps.relatorios.view.RelatorioAcessoView;
 import com.mps.shared.facade.AnuncioFacade;
 import com.mps.shared.facade.FacadeSingletonController;
 import com.mps.shared.facade.ProdutoFacade;
@@ -25,6 +26,7 @@ public class TerminalApp {
         UserView userView = new UserView(scanner, userFacade, facade);
         ProdutoView produtoView = new ProdutoView(scanner, produtoFacade);
         AnuncioView anuncioView = new AnuncioView(scanner, anuncioFacade, produtoFacade, userFacade);
+        RelatorioAcessoView relatorioAcessoView = new RelatorioAcessoView(scanner, userFacade);
 
         while (true) {
             try {
@@ -36,6 +38,7 @@ public class TerminalApp {
                 System.out.println("  2. Gerenciar Produtos (Catálogo)");
                 System.out.println("  3. Gerenciar Anúncios");
                 System.out.println("  4. Total de entidades cadastradas");
+                System.out.println("  5. Relatórios de acesso");
                 System.out.println("  7. Sair");
                 System.out.println("=============================");
                 System.out.print("Digite a sua escolha: ");
@@ -48,6 +51,7 @@ public class TerminalApp {
                     case 2 -> produtoView.produtoMenu();
                     case 3 -> anuncioView.anuncioMenu();
                     case 4 -> exibirTotalEntidades(facade);
+                    case 5 -> relatorioAcessoView.relatorioMenu();
                     case 7 -> {
                         System.out.println("Encerrando o programa...");
                         scanner.close();
