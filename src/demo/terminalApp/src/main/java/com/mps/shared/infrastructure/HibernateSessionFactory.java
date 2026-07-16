@@ -7,6 +7,7 @@ import java.util.Properties;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 
+import com.mps.acessos.domain.AcessoLog;
 import com.mps.anuncios.domain.Anuncio;
 import com.mps.produtos.domain.Produto;
 import com.mps.shared.exception.RepositorioException;
@@ -34,6 +35,7 @@ public final class HibernateSessionFactory {
             config.addAnnotatedClass(User.class);
             config.addAnnotatedClass(Produto.class);
             config.addAnnotatedClass(Anuncio.class);
+            config.addAnnotatedClass(AcessoLog.class);
             return config.buildSessionFactory();
         } catch (IOException e) {
             throw new RepositorioException("Falha ao ler application.properties", e);

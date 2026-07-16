@@ -4,11 +4,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
+import com.mps.acessos.domain.AcessoLog;
+import com.mps.acessos.domain.TipoAcesso;
 import com.mps.shared.factory.InMemoryRepositoryFactory;
 import com.mps.users.domain.Role;
 import com.mps.users.domain.User;
@@ -40,5 +43,28 @@ class UserFacadeTest {
 
         assertEquals(1, facade.contarUsuarios());
         assertTrue(facade.buscarUsuarioPorId(seraRemovido.getId()).isPresent());
+    }
+
+    @Test
+    void deve_registrar_acesso_a_cada_operacao_de_crud() {
+        UserFacade facade = UserFacade.getInstance(new InMemoryRepositoryFactory());
+        User usuario = new User(UUID.randomUUID(), "joaosilva", "123.456.789-00", "João Silva", "joao@email.com", "Senha@2024!", Role.USER, true);
+
+        facade.adicionarUsuario(usuario);
+        facade.buscarUsuarioPorId(usuario.getId());
+        usuario.setName("João Souza");
+        facade.atualizarUsuario(usuario);
+        facade.removerUsuario(usuario.getId());
+        facade.reativarUsuario(usuario.getId(), "joaosilva", "Senha@2024!");
+
+        List<AcessoLog> acessos = facade.listarAcessos();
+
+        assertEquals(5, acessos.size());
+        assertTrue(acessos.stream().allMatch(a -> a.getUsuarioId().equals(usuario.getId())));
+        assertTrue(acessos.stream().anyMatch(a -> a.getAcao() == TipoAcesso.CRIACAO));
+        assertTrue(acessos.stream().anyMatch(a -> a.getAcao() == TipoAcesso.BUSCA));
+        assertTrue(acessos.stream().anyMatch(a -> a.getAcao() == TipoAcesso.ATUALIZACAO));
+        assertTrue(acessos.stream().anyMatch(a -> a.getAcao() == TipoAcesso.REMOCAO));
+        assertTrue(acessos.stream().anyMatch(a -> a.getAcao() == TipoAcesso.REATIVACAO));
     }
 }

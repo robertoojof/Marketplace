@@ -1,5 +1,7 @@
 package com.mps.shared.factory;
 
+import com.mps.acessos.domain.IAcessoLogRepository;
+import com.mps.acessos.infrastructure.InMemoryAcessoLogRepository;
 import com.mps.anuncios.domain.IAnuncioRepository;
 import com.mps.anuncios.infrastructure.InMemoryAnuncioRepository;
 import com.mps.produtos.domain.IProdutoRepository;
@@ -22,5 +24,10 @@ public class InMemoryRepositoryFactory implements RepositoryFactory {
     @Override
     public IAnuncioRepository criarAnuncioRepository() {
         return new InMemoryAnuncioRepository();
+    }
+
+    @Override
+    public IAcessoLogRepository criarAcessoLogRepository() {
+        return new InMemoryAcessoLogRepository();
     }
 }

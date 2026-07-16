@@ -1,5 +1,7 @@
 package com.mps.shared.factory;
 
+import com.mps.acessos.domain.IAcessoLogRepository;
+import com.mps.acessos.infrastructure.HibernateAcessoLogRepository;
 import com.mps.anuncios.domain.IAnuncioRepository;
 import com.mps.anuncios.infrastructure.HibernateAnuncioRepository;
 import com.mps.produtos.domain.IProdutoRepository;
@@ -22,5 +24,10 @@ public class HibernateRepositoryFactory implements RepositoryFactory {
     @Override
     public IAnuncioRepository criarAnuncioRepository() {
         return new HibernateAnuncioRepository();
+    }
+
+    @Override
+    public IAcessoLogRepository criarAcessoLogRepository() {
+        return new HibernateAcessoLogRepository();
     }
 }
