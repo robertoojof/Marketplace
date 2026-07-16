@@ -9,26 +9,26 @@ import java.util.UUID;
 
 import com.mps.anuncios.domain.Anuncio;
 import com.mps.anuncios.domain.exception.ValidacaoAnuncioException;
-import com.mps.anuncios.presentation.controller.AnuncioController;
 import com.mps.produtos.domain.Produto;
-import com.mps.produtos.presentation.controller.ProdutoController;
 import com.mps.shared.exception.RepositorioException;
+import com.mps.shared.facade.AnuncioFacade;
+import com.mps.shared.facade.ProdutoFacade;
+import com.mps.shared.facade.UserFacade;
 import com.mps.users.domain.User;
-import com.mps.users.presentation.controller.UserController;
 
 public class AnuncioView {
 
     private final Scanner scanner;
-    private final AnuncioController anuncioController;
-    private final ProdutoController produtoController;
-    private final UserController userController;
+    private final AnuncioFacade anuncioFacade;
+    private final ProdutoFacade produtoFacade;
+    private final UserFacade userFacade;
 
-    public AnuncioView(Scanner scanner, AnuncioController anuncioController, ProdutoController produtoController,
-            UserController userController) {
+    public AnuncioView(Scanner scanner, AnuncioFacade anuncioFacade, ProdutoFacade produtoFacade,
+            UserFacade userFacade) {
         this.scanner = scanner;
-        this.anuncioController = anuncioController;
-        this.produtoController = produtoController;
-        this.userController = userController;
+        this.anuncioFacade = anuncioFacade;
+        this.produtoFacade = produtoFacade;
+        this.userFacade = userFacade;
     }
 
     public void anuncioMenu() {
@@ -86,7 +86,7 @@ public class AnuncioView {
         Anuncio anuncio = new Anuncio(UUID.randomUUID(), produto, vendedor, preco, quantidade, true);
 
         try {
-            anuncioController.adicionarAnuncio(anuncio);
+            anuncioFacade.adicionarAnuncio(anuncio);
             System.out.println("Anúncio criado com sucesso!");
         } catch (ValidacaoAnuncioException e) {
             System.out.println("\nErros de validação:");
@@ -98,7 +98,7 @@ public class AnuncioView {
 
     private void listarAnuncios() {
         try {
-            List<Anuncio> anuncios = anuncioController.listarAnuncios();
+            List<Anuncio> anuncios = anuncioFacade.listarAnuncios();
             if (anuncios.isEmpty()) {
                 System.out.println("Nenhum anúncio cadastrado.");
                 return;
@@ -117,7 +117,7 @@ public class AnuncioView {
         if (id == null) return;
 
         try {
-            Optional<Anuncio> anuncio = anuncioController.buscarAnuncioPorId(id);
+            Optional<Anuncio> anuncio = anuncioFacade.buscarAnuncioPorId(id);
             if (anuncio.isEmpty()) {
                 System.out.println("Anúncio não encontrado.");
                 return;
@@ -134,7 +134,7 @@ public class AnuncioView {
         if (id == null) return;
 
         try {
-            Optional<Anuncio> existente = anuncioController.buscarAnuncioPorId(id);
+            Optional<Anuncio> existente = anuncioFacade.buscarAnuncioPorId(id);
             if (existente.isEmpty()) {
                 System.out.println("Anúncio não encontrado.");
                 return;
@@ -162,7 +162,7 @@ public class AnuncioView {
                 }
             }
 
-            anuncioController.atualizarAnuncio(anuncio);
+            anuncioFacade.atualizarAnuncio(anuncio);
             System.out.println("Anúncio atualizado com sucesso!");
         } catch (ValidacaoAnuncioException e) {
             System.out.println("\nErros de validação:");
@@ -184,7 +184,7 @@ public class AnuncioView {
         }
 
         try {
-            anuncioController.removerAnuncio(id);
+            anuncioFacade.removerAnuncio(id);
             System.out.println("Anúncio removido com sucesso!");
         } catch (RepositorioException e) {
             System.out.println("\nErro ao remover anúncio: " + e.getMessage());
@@ -196,7 +196,7 @@ public class AnuncioView {
         if (id == null) return;
 
         try {
-            anuncioController.reativarAnuncio(id);
+            anuncioFacade.reativarAnuncio(id);
             System.out.println("Anúncio reativado com sucesso!");
         } catch (RepositorioException e) {
             System.out.println("\nErro ao reativar anúncio: " + e.getMessage());
@@ -207,7 +207,7 @@ public class AnuncioView {
         UUID id = lerUuid("ID do produto (catálogo): ");
         if (id == null) return null;
 
-        Optional<Produto> produto = produtoController.buscarProdutoPorId(id);
+        Optional<Produto> produto = produtoFacade.buscarProdutoPorId(id);
         if (produto.isEmpty()) {
             System.out.println("Produto não encontrado no catálogo.");
             return null;
@@ -219,7 +219,7 @@ public class AnuncioView {
         System.out.print("Login do vendedor: ");
         String login = scanner.nextLine();
 
-        Optional<User> vendedor = userController.buscarUsuarioPorLogin(login);
+        Optional<User> vendedor = userFacade.buscarUsuarioPorLogin(login);
         if (vendedor.isEmpty()) {
             System.out.println("Vendedor não encontrado.");
             return null;

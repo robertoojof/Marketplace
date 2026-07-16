@@ -8,17 +8,17 @@ import java.util.UUID;
 
 import com.mps.produtos.domain.Produto;
 import com.mps.produtos.domain.exception.ValidacaoProdutoException;
-import com.mps.produtos.presentation.controller.ProdutoController;
 import com.mps.shared.exception.RepositorioException;
+import com.mps.shared.facade.ProdutoFacade;
 
 public class ProdutoView {
 
     private final Scanner scanner;
-    private final ProdutoController produtoController;
+    private final ProdutoFacade produtoFacade;
 
-    public ProdutoView(Scanner scanner, ProdutoController produtoController) {
+    public ProdutoView(Scanner scanner, ProdutoFacade produtoFacade) {
         this.scanner = scanner;
-        this.produtoController = produtoController;
+        this.produtoFacade = produtoFacade;
     }
 
     public void produtoMenu() {
@@ -69,7 +69,7 @@ public class ProdutoView {
         Produto produto = new Produto(UUID.randomUUID(), nome, descricao, true);
 
         try {
-            produtoController.adicionarProduto(produto);
+            produtoFacade.adicionarProduto(produto);
             System.out.println("Produto adicionado com sucesso!");
         } catch (ValidacaoProdutoException e) {
             System.out.println("\nErros de validação:");
@@ -81,7 +81,7 @@ public class ProdutoView {
 
     private void listarProdutos() {
         try {
-            List<Produto> produtos = produtoController.listarProdutos();
+            List<Produto> produtos = produtoFacade.listarProdutos();
             if (produtos.isEmpty()) {
                 System.out.println("Nenhum produto cadastrado.");
                 return;
@@ -100,7 +100,7 @@ public class ProdutoView {
         if (id == null) return;
 
         try {
-            Optional<Produto> produto = produtoController.buscarProdutoPorId(id);
+            Optional<Produto> produto = produtoFacade.buscarProdutoPorId(id);
             if (produto.isEmpty()) {
                 System.out.println("Produto não encontrado.");
                 return;
@@ -117,7 +117,7 @@ public class ProdutoView {
         if (id == null) return;
 
         try {
-            Optional<Produto> existente = produtoController.buscarProdutoPorId(id);
+            Optional<Produto> existente = produtoFacade.buscarProdutoPorId(id);
             if (existente.isEmpty()) {
                 System.out.println("Produto não encontrado.");
                 return;
@@ -132,7 +132,7 @@ public class ProdutoView {
             String descricao = scanner.nextLine();
             if (!descricao.isBlank()) produto.setDescricao(descricao);
 
-            produtoController.atualizarProduto(produto);
+            produtoFacade.atualizarProduto(produto);
             System.out.println("Produto atualizado com sucesso!");
         } catch (ValidacaoProdutoException e) {
             System.out.println("\nErros de validação:");
@@ -154,7 +154,7 @@ public class ProdutoView {
         }
 
         try {
-            produtoController.removerProduto(id);
+            produtoFacade.removerProduto(id);
             System.out.println("Produto removido com sucesso!");
         } catch (RepositorioException e) {
             System.out.println("\nErro ao remover produto: " + e.getMessage());
@@ -166,7 +166,7 @@ public class ProdutoView {
         if (id == null) return;
 
         try {
-            produtoController.reativarProduto(id);
+            produtoFacade.reativarProduto(id);
             System.out.println("Produto reativado com sucesso!");
         } catch (RepositorioException e) {
             System.out.println("\nErro ao reativar produto: " + e.getMessage());

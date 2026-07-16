@@ -3,11 +3,12 @@ package com.mps;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
-import com.mps.anuncios.AnunciosModule;
 import com.mps.anuncios.view.AnuncioView;
-import com.mps.produtos.ProdutosModule;
 import com.mps.produtos.view.ProdutoView;
-import com.mps.users.UsersModule;
+import com.mps.shared.facade.AnuncioFacade;
+import com.mps.shared.facade.FacadeSingletonController;
+import com.mps.shared.facade.ProdutoFacade;
+import com.mps.shared.facade.UserFacade;
 import com.mps.users.view.UserView;
 
 public class TerminalApp {
@@ -16,13 +17,14 @@ public class TerminalApp {
         Scanner scanner = new Scanner(System.in);
         boolean usarBancoDeDados = selecionarArmazenamento(scanner);
 
-        UsersModule.Bundle users = UsersModule.create(scanner, usarBancoDeDados);
-        ProdutosModule.Bundle produtos = ProdutosModule.create(scanner, usarBancoDeDados);
-        AnuncioView anuncioView = AnunciosModule.create(scanner, usarBancoDeDados, produtos.repository(),
-                users.repository(), produtos.controller(), users.controller());
+        UserFacade userFacade = UserFacade.getInstance(usarBancoDeDados);
+        ProdutoFacade produtoFacade = ProdutoFacade.getInstance(usarBancoDeDados);
+        AnuncioFacade anuncioFacade = AnuncioFacade.getInstance(usarBancoDeDados);
+        FacadeSingletonController facade = FacadeSingletonController.getInstance(usarBancoDeDados);
 
-        UserView userView = users.view();
-        ProdutoView produtoView = produtos.view();
+        UserView userView = new UserView(scanner, userFacade, facade);
+        ProdutoView produtoView = new ProdutoView(scanner, produtoFacade);
+        AnuncioView anuncioView = new AnuncioView(scanner, anuncioFacade, produtoFacade, userFacade);
 
         while (true) {
             try {
@@ -33,6 +35,7 @@ public class TerminalApp {
                 System.out.println("  1. Gerenciar Usuários");
                 System.out.println("  2. Gerenciar Produtos (Catálogo)");
                 System.out.println("  3. Gerenciar Anúncios");
+                System.out.println("  4. Total de entidades cadastradas");
                 System.out.println("  7. Sair");
                 System.out.println("=============================");
                 System.out.print("Digite a sua escolha: ");
@@ -44,6 +47,7 @@ public class TerminalApp {
                     case 1 -> userView.userMenu();
                     case 2 -> produtoView.produtoMenu();
                     case 3 -> anuncioView.anuncioMenu();
+                    case 4 -> exibirTotalEntidades(facade);
                     case 7 -> {
                         System.out.println("Encerrando o programa...");
                         scanner.close();
@@ -56,6 +60,16 @@ public class TerminalApp {
                 scanner.nextLine();
             }
         }
+    }
+
+    private static void exibirTotalEntidades(FacadeSingletonController facade) {
+        System.out.println("\n=============================");
+        System.out.println("   Total de entidades cadastradas");
+        System.out.println("=============================");
+        System.out.println("Usuários ativos: " + facade.contarUsuarios());
+        System.out.println("Produtos ativos: " + facade.contarProdutos());
+        System.out.println("Anúncios ativos: " + facade.contarAnuncios());
+        System.out.println("Total: " + facade.contarEntidadesCadastradas());
     }
 
     private static boolean selecionarArmazenamento(Scanner scanner) {

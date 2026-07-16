@@ -8,19 +8,22 @@ import java.util.UUID;
 
 import com.mps.shared.exception.AutorizacaoException;
 import com.mps.shared.exception.RepositorioException;
+import com.mps.shared.facade.FacadeSingletonController;
+import com.mps.shared.facade.UserFacade;
 import com.mps.users.domain.Role;
 import com.mps.users.domain.User;
 import com.mps.users.domain.exception.ValidacaoUsuarioException;
-import com.mps.users.presentation.controller.UserController;
 
 public class UserView {
 
     private final Scanner scanner;
-    private final UserController userController;
+    private final UserFacade userFacade;
+    private final FacadeSingletonController facade;
 
-    public UserView(Scanner scanner, UserController userController) {
+    public UserView(Scanner scanner, UserFacade userFacade, FacadeSingletonController facade) {
         this.scanner = scanner;
-        this.userController = userController;
+        this.userFacade = userFacade;
+        this.facade = facade;
     }
 
     public void userMenu() {
@@ -77,7 +80,7 @@ public class UserView {
         User user = new User(UUID.randomUUID(), login, cpf, nome, email, senha, Role.USER, true);
 
         try {
-            userController.adicionarUsuario(user);
+            userFacade.adicionarUsuario(user);
             System.out.println("Usuário adicionado com sucesso!");
         } catch (ValidacaoUsuarioException e) {
             System.out.println("\nErros de validação:");
@@ -89,7 +92,7 @@ public class UserView {
 
     private void listarUsuarios() {
         try {
-            List<User> usuarios = userController.listarUsuarios();
+            List<User> usuarios = userFacade.listarUsuarios();
             if (usuarios.isEmpty()) {
                 System.out.println("Nenhum usuário cadastrado.");
                 return;
@@ -108,7 +111,7 @@ public class UserView {
         if (id == null) return;
 
         try {
-            Optional<User> usuario = userController.buscarUsuarioPorId(id);
+            Optional<User> usuario = userFacade.buscarUsuarioPorId(id);
             if (usuario.isEmpty()) {
                 System.out.println("Usuário não encontrado.");
                 return;
@@ -125,7 +128,7 @@ public class UserView {
         if (id == null) return;
 
         try {
-            Optional<User> existente = userController.buscarUsuarioPorId(id);
+            Optional<User> existente = userFacade.buscarUsuarioPorId(id);
             if (existente.isEmpty()) {
                 System.out.println("Usuário não encontrado.");
                 return;
@@ -152,7 +155,7 @@ public class UserView {
             String senha = scanner.nextLine();
             if (!senha.isBlank()) usuario.setPassword(senha);
 
-            userController.atualizarUsuario(usuario);
+            userFacade.atualizarUsuario(usuario);
             System.out.println("Usuário atualizado com sucesso!");
         } catch (ValidacaoUsuarioException e) {
             System.out.println("\nErros de validação:");
@@ -174,7 +177,7 @@ public class UserView {
         }
 
         try {
-            userController.removerUsuario(id);
+            facade.removerUsuario(id);
             System.out.println("Usuário removido com sucesso!");
         } catch (RepositorioException e) {
             System.out.println("\nErro ao remover usuário: " + e.getMessage());
@@ -191,7 +194,7 @@ public class UserView {
         String senhaAutorizador = scanner.nextLine();
 
         try {
-            userController.reativarUsuario(id, loginAutorizador, senhaAutorizador);
+            userFacade.reativarUsuario(id, loginAutorizador, senhaAutorizador);
             System.out.println("Usuário reativado com sucesso!");
         } catch (AutorizacaoException e) {
             System.out.println("\nErro de autorização: " + e.getMessage());
