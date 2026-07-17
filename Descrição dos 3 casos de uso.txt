@@ -1,0 +1,43 @@
+Descrição dos 3 casos de uso mais relevantes:
+
+1. CSU12 - Finalizar Compra (Checkout Unificado)
+Este é o caso de uso de maior peso para a conversão de vendas. O documento aponta que o abandono de carrinho associado a um checkout complexo é a maior dor dos compradores.
+
+Ator Principal: Comprador
+Atores Secundários: Sistema (OmniMart) e Gateway de Pagamento.
+Resumo: Permite ao Comprador concluir a aquisição de múltiplos produtos (mesmo que sejam de vendedores distintos) em uma única tela e transação.
+Pré-condições: O Comprador deve estar autenticado e possuir pelo menos um item adicionado ao carrinho.
+Fluxo Principal:
+O Comprador acessa a tela de checkout.
+O sistema exibe o resumo dos itens, separados ou consolidados, e realiza o cálculo unificado do frete (mesmo com múltiplas origens).
+O Comprador seleciona/confirma o endereço de entrega e o método de pagamento.
+O Comprador aciona o botão de confirmar compra.
+O sistema valida os dados e dispara a comunicação com o Gateway de Pagamento (include CSU13).
+Com o pagamento aprovado, o sistema gera o identificador único do pedido e esvazia o carrinho.
+Pós-condições: Pedido criado com sucesso (status "Pago" ou "Pendente") e os vendedores correspondentes são notificados.
+2. CSU04 - Cadastrar Produto
+O documento enfatiza que a necessidade de um cadastro de produtos "rápido e intuitivo" é crucial para atrair e reter Vendedores (pequenos lojistas). Foi até criada uma métrica de usabilidade determinando que o formulário deve ser objetivo para reduzir a carga cognitiva.
+
+Ator Principal: Vendedor
+Resumo: O Vendedor insere um novo item no catálogo do marketplace, preenchendo informações estruturadas de forma ágil para que o produto fique disponível para busca imediatamente.
+Pré-condições: O Vendedor deve estar logado no seu painel administrativo (dashboard).
+Fluxo Principal:
+O Vendedor acessa a área de Gestão de Catálogo e seleciona "Novo Produto".
+O sistema exibe o formulário otimizado (focado apenas nas informações essenciais como título, fotos, descrição, preço, categoria e estoque).
+O Vendedor preenche as informações e clica em "Salvar".
+O sistema realiza as validações de regras de negócios (preço > 0, campos obrigatórios, etc.).
+O sistema salva o registro e indexa o produto para a barra de pesquisa do Comprador.
+Pós-condições: Produto salvo no banco de dados, com o status "Ativo", e visível para os compradores na vitrine e nos resultados de busca.
+3. CSU13 - Processar Pagamento Externo (com Split)
+Associado ao requisito [RF005], este é o coração financeiro e legal de um marketplace. Os lojistas entrevistados destacaram a "clareza sobre prazos e valores de repasse financeiro" como fator crítico.
+
+Ator Principal: Gateway de Pagamento (Sistema Externo)
+Ator Secundário: Sistema (OmniMart)
+Resumo: Ocorre nos bastidores (backend) logo após o Comprador finalizar o checkout. Consiste em processar o cartão/PIX e fatiar o dinheiro automaticamente entre a plataforma e os múltiplos lojistas envolvidos naquele carrinho.
+Pré-condições: O Comprador submeteu a intenção de compra no CSU12 com dados de pagamento válidos.
+Fluxo Principal:
+O sistema envia a transação fechada (valor total) para o provedor/gateway financeiro.
+O Gateway processa e aprova a transação.
+O sistema executa as regras de Split de Pagamento, calculando a comissão devida ao OmniMart sobre cada item.
+O sistema instrui o Gateway a alocar automaticamente o montante líquido (Valor Total - Comissão - Taxas) nas contas virtuais individuais de cada Vendedor que tinha um produto naquele pedido.
+Pós-condições: Dinheiro retido/direcionado corretamente sem risco de bitributação, garantindo que o lojista veja o saldo provisionado no seu painel.
