@@ -16,6 +16,7 @@ import com.mps.produtos.domain.Produto;
 import com.mps.shared.exception.DesfazerException;
 import com.mps.shared.factory.InMemoryRepositoryFactory;
 import com.mps.shared.factory.RepositoryFactory;
+import com.mps.shared.security.SessaoUsuario;
 import com.mps.users.domain.Role;
 import com.mps.users.domain.User;
 
@@ -42,10 +43,13 @@ class AnuncioMementoTest {
         vendedor = new User(UUID.randomUUID(), "joaosilva", "123.456.789-00", "João Silva",
                 "joao@email.com", "Senha@2024!", Role.USER, true);
         userFacade.adicionarUsuario(vendedor);
+
+        SessaoUsuario.getInstance().autenticar(vendedor);
     }
 
     @AfterEach
     void limpar() {
+        SessaoUsuario.getInstance().encerrar();
         AnuncioFacade.reset();
         ProdutoFacade.reset();
         UserFacade.reset();

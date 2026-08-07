@@ -8,6 +8,7 @@ import java.util.UUID;
 
 import com.mps.shared.exception.AutorizacaoException;
 import com.mps.shared.exception.RepositorioException;
+import com.mps.shared.security.SessaoUsuario;
 import com.mps.shared.facade.FacadeSingletonController;
 import com.mps.shared.facade.UserFacade;
 import com.mps.users.domain.Role;
@@ -38,7 +39,9 @@ public class UserView {
                 System.out.println("  4. Atualizar usuário");
                 System.out.println("  5. Remover usuário");
                 System.out.println("  6. Reativar usuário");
-                System.out.println("  7. Voltar");
+                System.out.println("  7. Autenticar (definir sessão)");
+                System.out.println("  8. Encerrar sessão");
+                System.out.println("  9. Voltar");
                 System.out.println("=============================");
                 System.out.print("Digite a sua escolha: ");
 
@@ -52,7 +55,9 @@ public class UserView {
                     case 4 -> atualizarUsuario();
                     case 5 -> removerUsuario();
                     case 6 -> reativarUsuario();
-                    case 7 -> {
+                    case 7 -> autenticar();
+                    case 8 -> encerrarSessao();
+                    case 9 -> {
                         System.out.println("Saindo...");
                         return;
                     }
@@ -63,6 +68,34 @@ public class UserView {
                 scanner.nextLine();
             }
         }
+    }
+
+    private Role lerPapel() {
+        System.out.print("Papel (1 - Usuário comum, 2 - Administrador) [1]: ");
+        return "2".equals(scanner.nextLine().trim()) ? Role.ADMIN : Role.USER;
+    }
+
+    private void autenticar() {
+        System.out.print("Login: ");
+        String login = scanner.nextLine();
+        System.out.print("Senha: ");
+        String senha = scanner.nextLine();
+
+        Optional<User> usuario = userFacade.buscarUsuarioPorLogin(login)
+                .filter(candidato -> candidato.getPassword().equals(senha));
+
+        if (usuario.isEmpty()) {
+            System.out.println("Credenciais inválidas.");
+            return;
+        }
+
+        SessaoUsuario.getInstance().autenticar(usuario.get());
+        System.out.println("Autenticado como " + SessaoUsuario.getInstance().descricao());
+    }
+
+    private void encerrarSessao() {
+        SessaoUsuario.getInstance().encerrar();
+        System.out.println("Sessão encerrada.");
     }
 
     private void adicionarUsuario() {
@@ -76,8 +109,9 @@ public class UserView {
         String email = scanner.nextLine();
         System.out.print("Senha: ");
         String senha = scanner.nextLine();
+        Role papel = lerPapel();
 
-        User user = new User(UUID.randomUUID(), login, cpf, nome, email, senha, Role.USER, true);
+        User user = new User(UUID.randomUUID(), login, cpf, nome, email, senha, papel, true);
 
         try {
             userFacade.adicionarUsuario(user);

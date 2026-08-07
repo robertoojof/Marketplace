@@ -4,14 +4,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import com.mps.anuncios.application.AnuncioService;
+import com.mps.anuncios.application.IAnuncioService;
 import com.mps.anuncios.domain.Anuncio;
 
 public class AnuncioController {
 
-    private final AnuncioService anuncioService;
+    private final IAnuncioService anuncioService;
 
-    public AnuncioController(AnuncioService anuncioService) {
+    public AnuncioController(IAnuncioService anuncioService) {
         this.anuncioService = anuncioService;
     }
 

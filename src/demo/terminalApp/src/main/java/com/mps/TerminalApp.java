@@ -8,6 +8,7 @@ import com.mps.anuncios.view.AnuncioView;
 import com.mps.produtos.view.ProdutoView;
 import com.mps.relatorios.view.RelatorioAcessoView;
 import com.mps.shared.command.RegistroComando;
+import com.mps.shared.security.SessaoUsuario;
 import com.mps.shared.facade.AnuncioFacade;
 import com.mps.shared.facade.FacadeSingletonController;
 import com.mps.shared.facade.ProdutoFacade;
@@ -35,6 +36,7 @@ public class TerminalApp {
                 System.out.println("\n=============================");
                 System.out.println("   Oministore (Terminal edition)   ");
                 System.out.println("=============================");
+                System.out.println("Sessão: " + SessaoUsuario.getInstance().descricao());
                 System.out.println("Escolha uma opção:");
                 System.out.println("  1. Gerenciar Usuários");
                 System.out.println("  2. Gerenciar Produtos (Catálogo)");

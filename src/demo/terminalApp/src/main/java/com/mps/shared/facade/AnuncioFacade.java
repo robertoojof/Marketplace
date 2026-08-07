@@ -6,6 +6,8 @@ import java.util.UUID;
 
 import com.mps.anuncios.application.AnuncioCaretaker;
 import com.mps.anuncios.application.AnuncioService;
+import com.mps.anuncios.application.AnuncioServiceProxy;
+import com.mps.anuncios.application.IAnuncioService;
 import com.mps.anuncios.application.command.AdicionarAnuncioCommand;
 import com.mps.anuncios.application.command.AtualizarAnuncioCommand;
 import com.mps.anuncios.application.command.DesativarAnunciosDoVendedorCommand;
@@ -17,6 +19,7 @@ import com.mps.anuncios.domain.IAnuncioRepository;
 import com.mps.anuncios.presentation.controller.AnuncioController;
 import com.mps.shared.command.CommandInvoker;
 import com.mps.shared.factory.RepositoryFactory;
+import com.mps.shared.security.SessaoUsuario;
 
 public final class AnuncioFacade {
 
@@ -28,9 +31,11 @@ public final class AnuncioFacade {
 
     private AnuncioFacade(RepositoryFactory factory) {
         IAnuncioRepository anuncioRepository = factory.criarAnuncioRepository();
-        this.anuncioController = new AnuncioController(new AnuncioService(anuncioRepository,
+        IAnuncioService anuncioService = new AnuncioService(anuncioRepository,
                 ProdutoFacade.getInstance(factory).getRepository(),
-                UserFacade.getInstance(factory).getRepository()));
+                UserFacade.getInstance(factory).getRepository());
+        this.anuncioController = new AnuncioController(
+                new AnuncioServiceProxy(anuncioService, SessaoUsuario.getInstance()));
     }
 
     public static synchronized AnuncioFacade getInstance(RepositoryFactory factory) {

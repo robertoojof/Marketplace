@@ -20,7 +20,7 @@ import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
 
-public class AnuncioService {
+public class AnuncioService implements IAnuncioService {
 
     private final IAnuncioRepository anuncioRepository;
     private final IProdutoRepository produtoRepository;
@@ -39,36 +39,44 @@ public class AnuncioService {
         this.validator = factory.getValidator();
     }
 
+    @Override
     public void adicionarAnuncio(Anuncio anuncio) {
         validar(anuncio);
         anuncioRepository.salvar(anuncio);
     }
 
+    @Override
     public List<Anuncio> listarAnuncios() {
         return anuncioRepository.buscarTodos();
     }
 
+    @Override
     public Optional<Anuncio> buscarAnuncioPorId(UUID id) {
         return anuncioRepository.buscarPorId(id);
     }
 
+    @Override
     public List<Anuncio> buscarAnunciosPorVendedor(UUID vendedorId) {
         return anuncioRepository.buscarPorVendedor(vendedorId);
     }
 
+    @Override
     public Anuncio atualizarAnuncio(Anuncio anuncio) {
         validar(anuncio);
         return anuncioRepository.atualizar(anuncio);
     }
 
+    @Override
     public void removerAnuncio(UUID id) {
         anuncioRepository.deletar(id);
     }
 
+    @Override
     public void reativarAnuncio(UUID id) {
         anuncioRepository.reativar(id);
     }
 
+    @Override
     public void desativarAnunciosDoVendedor(UUID vendedorId) {
         anuncioRepository.desativarTodosDoVendedor(vendedorId);
     }

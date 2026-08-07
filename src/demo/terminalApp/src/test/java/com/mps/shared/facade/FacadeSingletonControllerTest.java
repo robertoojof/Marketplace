@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 
 import com.mps.anuncios.domain.Anuncio;
 import com.mps.produtos.domain.Produto;
+import com.mps.shared.security.SessaoUsuario;
 import com.mps.users.domain.Role;
 import com.mps.users.domain.User;
 
@@ -19,7 +20,13 @@ class FacadeSingletonControllerTest {
 
     @AfterEach
     void limpar() {
+        SessaoUsuario.getInstance().encerrar();
         FacadeSingletonController.reset();
+    }
+
+    private static User usuario(String login, Role papel) {
+        return new User(UUID.randomUUID(), login, "123.456.789-00", "Joao Silva",
+                "joao@email.com", "Senha@2024!", papel, true);
     }
 
     @Test
@@ -37,8 +44,9 @@ class FacadeSingletonControllerTest {
         ProdutoFacade produtoFacade = ProdutoFacade.getInstance();
         AnuncioFacade anuncioFacade = AnuncioFacade.getInstance();
 
-        User vendedor = new User(UUID.randomUUID(), "joaosilva", "123.456.789-00", "João Silva", "joao@email.com", "Senha@2024!", Role.USER, true);
+        User vendedor = usuario("joaosilva", Role.USER);
         userFacade.adicionarUsuario(vendedor);
+        SessaoUsuario.getInstance().autenticar(vendedor);
 
         Produto produto = new Produto(UUID.randomUUID(), "Sabonete Dove", "Sabonete hidratante", true);
         produtoFacade.adicionarProduto(produto);
@@ -59,8 +67,9 @@ class FacadeSingletonControllerTest {
         ProdutoFacade produtoFacade = ProdutoFacade.getInstance();
         AnuncioFacade anuncioFacade = AnuncioFacade.getInstance();
 
-        User vendedor = new User(UUID.randomUUID(), "joaosilva", "123.456.789-00", "João Silva", "joao@email.com", "Senha@2024!", Role.USER, true);
+        User vendedor = usuario("joaosilva", Role.USER);
         userFacade.adicionarUsuario(vendedor);
+        SessaoUsuario.getInstance().autenticar(vendedor);
 
         Produto produto = new Produto(UUID.randomUUID(), "Sabonete Dove", "Sabonete hidratante", true);
         produtoFacade.adicionarProduto(produto);
@@ -69,6 +78,10 @@ class FacadeSingletonControllerTest {
         Anuncio anuncio2 = new Anuncio(UUID.randomUUID(), produto, vendedor, new BigDecimal("9.90"), 5, true);
         anuncioFacade.adicionarAnuncio(anuncio1);
         anuncioFacade.adicionarAnuncio(anuncio2);
+
+        User admin = usuario("adminmaster", Role.ADMIN);
+        userFacade.adicionarUsuario(admin);
+        SessaoUsuario.getInstance().autenticar(admin);
 
         facade.removerUsuario(vendedor.getId());
 
