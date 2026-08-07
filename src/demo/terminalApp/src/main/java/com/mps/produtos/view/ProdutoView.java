@@ -6,7 +6,9 @@ import java.util.Optional;
 import java.util.Scanner;
 import java.util.UUID;
 
+import com.mps.produtos.application.MontadorDeCatalogo;
 import com.mps.produtos.domain.Produto;
+import com.mps.produtos.domain.catalogo.CategoriaCatalogo;
 import com.mps.produtos.domain.exception.ValidacaoProdutoException;
 import com.mps.shared.exception.RepositorioException;
 import com.mps.shared.facade.ProdutoFacade;
@@ -33,7 +35,8 @@ public class ProdutoView {
                 System.out.println("  4. Atualizar produto");
                 System.out.println("  5. Remover produto");
                 System.out.println("  6. Reativar produto");
-                System.out.println("  7. Voltar");
+                System.out.println("  7. Ver catálogo por categoria");
+                System.out.println("  8. Voltar");
                 System.out.println("=============================");
                 System.out.print("Digite a sua escolha: ");
 
@@ -47,7 +50,8 @@ public class ProdutoView {
                     case 4 -> atualizarProduto();
                     case 5 -> removerProduto();
                     case 6 -> reativarProduto();
-                    case 7 -> {
+                    case 7 -> exibirCatalogo();
+                    case 8 -> {
                         System.out.println("Saindo...");
                         return;
                     }
@@ -65,8 +69,9 @@ public class ProdutoView {
         String nome = scanner.nextLine();
         System.out.print("Descrição: ");
         String descricao = scanner.nextLine();
+        String categoria = lerCategoria(Produto.CATEGORIA_PADRAO);
 
-        Produto produto = new Produto(UUID.randomUUID(), nome, descricao, true);
+        Produto produto = new Produto(UUID.randomUUID(), nome, descricao, categoria, true);
 
         try {
             produtoFacade.adicionarProduto(produto);
@@ -132,6 +137,8 @@ public class ProdutoView {
             String descricao = scanner.nextLine();
             if (!descricao.isBlank()) produto.setDescricao(descricao);
 
+            produto.setCategoria(lerCategoria(produto.getCategoria()));
+
             produtoFacade.atualizarProduto(produto);
             System.out.println("Produto atualizado com sucesso!");
         } catch (ValidacaoProdutoException e) {
@@ -173,6 +180,27 @@ public class ProdutoView {
         }
     }
 
+    private void exibirCatalogo() {
+        try {
+            CategoriaCatalogo catalogo = produtoFacade.montarCatalogo();
+            if (catalogo.contarProdutos() == 0) {
+                System.out.println("Nenhum produto cadastrado.");
+                return;
+            }
+            System.out.println("\n--- Catálogo por categoria ---");
+            System.out.print(catalogo.exibir(0));
+        } catch (RepositorioException e) {
+            System.out.println("\nErro ao montar catálogo: " + e.getMessage());
+        }
+    }
+
+    private String lerCategoria(String categoriaAtual) {
+        System.out.printf("Categoria [%s] (use \"%s\" para subcategorias): ",
+                categoriaAtual, MontadorDeCatalogo.SEPARADOR_DE_NIVEIS);
+        String entrada = scanner.nextLine();
+        return entrada.isBlank() ? categoriaAtual : entrada;
+    }
+
     private UUID lerUuid() {
         System.out.print("ID do produto: ");
         String entrada = scanner.nextLine();
@@ -185,7 +213,8 @@ public class ProdutoView {
     }
 
     private void imprimirProduto(Produto p) {
-        System.out.printf("ID: %s | Nome: %s | Descrição: %s | Status: %s%n",
-                p.getId(), p.getNome(), p.getDescricao(), p.isAtivo() ? "Ativo" : "Inativo");
+        System.out.printf("ID: %s | Nome: %s | Descrição: %s | Categoria: %s | Status: %s%n",
+                p.getId(), p.getNome(), p.getDescricao(), p.getCategoria(),
+                p.isAtivo() ? "Ativo" : "Inativo");
     }
 }

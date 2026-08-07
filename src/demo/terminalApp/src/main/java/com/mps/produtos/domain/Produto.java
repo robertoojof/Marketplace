@@ -20,6 +20,8 @@ import lombok.Setter;
 @Setter
 public class Produto {
 
+    public static final String CATEGORIA_PADRAO = "Sem categoria";
+
     @Id
     @Column(name = "id")
     private UUID id;
@@ -31,6 +33,13 @@ public class Produto {
     @Column(name = "descricao")
     private String descricao;
 
+    @Column(name = "categoria")
+    private String categoria;
+
     @Column(name = "ativo", nullable = false)
     private boolean ativo;
+
+    public Produto(UUID id, String nome, String descricao, boolean ativo) {
+        this(id, nome, descricao, CATEGORIA_PADRAO, ativo);
+    }
 }

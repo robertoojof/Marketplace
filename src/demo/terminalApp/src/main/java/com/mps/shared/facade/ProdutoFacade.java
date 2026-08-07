@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.mps.produtos.application.MontadorDeCatalogo;
 import com.mps.produtos.application.ProdutoService;
 import com.mps.produtos.application.command.AdicionarProdutoCommand;
 import com.mps.produtos.application.command.AtualizarProdutoCommand;
@@ -11,17 +12,21 @@ import com.mps.produtos.application.command.ReativarProdutoCommand;
 import com.mps.produtos.application.command.RemoverProdutoCommand;
 import com.mps.produtos.domain.IProdutoRepository;
 import com.mps.produtos.domain.Produto;
+import com.mps.produtos.domain.catalogo.CategoriaCatalogo;
 import com.mps.produtos.presentation.controller.ProdutoController;
 import com.mps.shared.command.CommandInvoker;
 import com.mps.shared.factory.RepositoryFactory;
 
 public final class ProdutoFacade {
 
+    private static final String NOME_DO_CATALOGO = "Catálogo OmniMart";
+
     private static ProdutoFacade instance;
 
     private final IProdutoRepository produtoRepository;
     private final ProdutoController produtoController;
     private final CommandInvoker invoker = new CommandInvoker();
+    private final MontadorDeCatalogo montadorDeCatalogo = new MontadorDeCatalogo();
 
     private ProdutoFacade(RepositoryFactory factory) {
         this.produtoRepository = factory.criarProdutoRepository();
@@ -76,6 +81,10 @@ public final class ProdutoFacade {
 
     public void reativarProduto(UUID id) {
         invoker.executar(new ReativarProdutoCommand(produtoController, id));
+    }
+
+    public CategoriaCatalogo montarCatalogo() {
+        return montadorDeCatalogo.montar(NOME_DO_CATALOGO, listarProdutos());
     }
 
     public int contarProdutos() {
