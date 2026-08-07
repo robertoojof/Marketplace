@@ -1,8 +1,10 @@
 package com.mps.produtos.domain.exception;
 
+import com.mps.shared.exception.NegocioException;
+
 import java.util.List;
 
-public class ValidacaoProdutoException extends RuntimeException {
+public class ValidacaoProdutoException extends NegocioException {
 
     private final List<String> erros;
 

@@ -4,9 +4,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+
+import com.mps.shared.exception.AutorizacaoException;
+import com.mps.shared.logging.Logger;
 
 class CommandInvokerTest {
 
@@ -42,6 +46,65 @@ class CommandInvokerTest {
         assertEquals(2, historico.size());
         assertEquals("Comando A", historico.get(0).descricao());
         assertEquals("Comando B", historico.get(1).descricao());
+    }
+
+    private static class LoggerEspiao implements Logger {
+
+        private final List<String> avisos = new ArrayList<>();
+        private final List<String> erros = new ArrayList<>();
+
+        @Override
+        public void info(String mensagem) {
+        }
+
+        @Override
+        public void warn(String mensagem) {
+            avisos.add(mensagem);
+        }
+
+        @Override
+        public void error(String mensagem, Throwable causa) {
+            erros.add(mensagem);
+        }
+    }
+
+    private static Command<Void> comandoQueLanca(RuntimeException erro) {
+        return new Command<>() {
+            @Override
+            public Void executar() {
+                throw erro;
+            }
+
+            @Override
+            public String descricao() {
+                return "Comando problemático";
+            }
+        };
+    }
+
+    @Test
+    void recusa_de_negocio_deve_ser_registrada_como_aviso_sem_pilha_de_execucao() {
+        LoggerEspiao logger = new LoggerEspiao();
+        CommandInvoker invoker = new CommandInvoker(logger);
+
+        assertThrows(AutorizacaoException.class,
+                () -> invoker.executar(comandoQueLanca(new AutorizacaoException("sem permissão"))));
+
+        assertEquals(1, logger.avisos.size());
+        assertTrue(logger.avisos.get(0).contains("sem permissão"));
+        assertTrue(logger.erros.isEmpty());
+    }
+
+    @Test
+    void falha_inesperada_deve_ser_registrada_como_erro_com_pilha_de_execucao() {
+        LoggerEspiao logger = new LoggerEspiao();
+        CommandInvoker invoker = new CommandInvoker(logger);
+
+        assertThrows(IllegalStateException.class,
+                () -> invoker.executar(comandoQueLanca(new IllegalStateException("bug"))));
+
+        assertEquals(1, logger.erros.size());
+        assertTrue(logger.avisos.isEmpty());
     }
 
     @Test

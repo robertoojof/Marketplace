@@ -1,8 +1,10 @@
 package com.mps.anuncios.domain.exception;
 
+import com.mps.shared.exception.NegocioException;
+
 import java.util.List;
 
-public class ValidacaoAnuncioException extends RuntimeException {
+public class ValidacaoAnuncioException extends NegocioException {
 
     private final List<String> erros;
 
