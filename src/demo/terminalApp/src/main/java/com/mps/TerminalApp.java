@@ -1,6 +1,7 @@
 package com.mps;
 
 import java.util.InputMismatchException;
+import java.util.NoSuchElementException;
 import java.util.List;
 import java.util.Scanner;
 
@@ -18,7 +19,15 @@ import com.mps.users.view.UserView;
 public class TerminalApp {
 
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
+        try (Scanner scanner = new Scanner(System.in)) {
+            executar(scanner);
+        } catch (NoSuchElementException e) {
+            // Entrada esgotada (Ctrl+D ou execução via pipe sem a opção de sair).
+            System.out.println("\nEntrada encerrada. Encerrando o programa...");
+        }
+    }
+
+    private static void executar(Scanner scanner) {
         boolean usarBancoDeDados = selecionarArmazenamento(scanner);
 
         FacadeSingletonController facade = FacadeSingletonController.getInstance(usarBancoDeDados);
@@ -60,7 +69,6 @@ public class TerminalApp {
                     case 6 -> exibirHistoricoDeComandos(facade);
                     case 7 -> {
                         System.out.println("Encerrando o programa...");
-                        scanner.close();
                         return;
                     }
                     default -> System.out.println("Opção inválida. Por favor, tente novamente.");
