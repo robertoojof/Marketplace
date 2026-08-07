@@ -127,12 +127,13 @@ public class HibernateAnuncioRepository implements IAnuncioRepository {
             tx = session.beginTransaction();
             Anuncio anuncio = session.find(Anuncio.class, id);
             if (anuncio == null) {
+
+                tx.rollback();
                 throw new RecursoNaoEncontradoException("Anúncio não encontrado");
             }
             anuncio.setAtivo(ativo);
             tx.commit();
         } catch (RecursoNaoEncontradoException e) {
-            if (tx != null) tx.rollback();
             throw e;
         } catch (Exception e) {
             if (tx != null) tx.rollback();

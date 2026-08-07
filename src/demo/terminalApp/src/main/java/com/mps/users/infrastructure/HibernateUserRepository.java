@@ -103,12 +103,13 @@ public class HibernateUserRepository implements IUserRepository {
             tx = session.beginTransaction();
             User usuario = session.find(User.class, id);
             if (usuario == null) {
+
+                tx.rollback();
                 throw new RecursoNaoEncontradoException("Usuário não encontrado");
             }
             usuario.setAtivo(ativo);
             tx.commit();
         } catch (RecursoNaoEncontradoException e) {
-            if (tx != null) tx.rollback();
             throw e;
         } catch (Exception e) {
             if (tx != null) tx.rollback();

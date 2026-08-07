@@ -91,12 +91,13 @@ public class HibernateProdutoRepository implements IProdutoRepository {
             tx = session.beginTransaction();
             Produto produto = session.find(Produto.class, id);
             if (produto == null) {
+
+                tx.rollback();
                 throw new RecursoNaoEncontradoException("Produto não encontrado");
             }
             produto.setAtivo(ativo);
             tx.commit();
         } catch (RecursoNaoEncontradoException e) {
-            if (tx != null) tx.rollback();
             throw e;
         } catch (Exception e) {
             if (tx != null) tx.rollback();
