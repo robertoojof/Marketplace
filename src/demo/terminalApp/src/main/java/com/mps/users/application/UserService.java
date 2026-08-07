@@ -35,6 +35,7 @@ public class UserService {
 
     public void adicionarUsuario(User user) {
         validar(user);
+        exigirLoginDisponivel(user);
         userRepository.salvar(user);
     }
 
@@ -52,6 +53,7 @@ public class UserService {
 
     public User atualizarUsuario(User user) {
         validar(user);
+        exigirLoginDisponivel(user);
         return userRepository.atualizar(user);
     }
 
@@ -71,6 +73,16 @@ public class UserService {
         }
 
         userRepository.reativar(idAlvo);
+    }
+
+    private void exigirLoginDisponivel(User user) {
+        boolean loginTomadoPorOutro = userRepository.buscarPorLogin(user.getLogin())
+                .filter(existente -> !existente.getId().equals(user.getId()))
+                .isPresent();
+
+        if (loginTomadoPorOutro) {
+            throw new ValidacaoUsuarioException(List.of("Login já está em uso: " + user.getLogin()));
+        }
     }
 
     private void validar(User user) {

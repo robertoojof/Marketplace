@@ -28,6 +28,48 @@ class UserServiceTest {
         userService = new UserService(new InMemoryUserRepository());
     }
 
+    private User usuarioCom(String login) {
+        return new User(UUID.randomUUID(), login, "123.456.789-00", "Fulano",
+                "fulano@email.com", "Senha@2024!", Role.USER, true);
+    }
+
+    @Test
+    void nao_deve_adicionar_usuario_com_login_ja_cadastrado() {
+        userService.adicionarUsuario(usuarioCom("joaosilva"));
+
+        ValidacaoUsuarioException erro = assertThrows(ValidacaoUsuarioException.class,
+                () -> userService.adicionarUsuario(usuarioCom("joaosilva")));
+
+        assertEquals(List.of("Login já está em uso: joaosilva"), erro.getErros());
+        assertEquals(1, userService.listarUsuarios().size());
+    }
+
+    @Test
+    void deve_permitir_atualizar_usuario_mantendo_o_proprio_login() {
+        User usuario = usuarioCom("joaosilva");
+        userService.adicionarUsuario(usuario);
+
+        User alterado = new User(usuario.getId(), "joaosilva", "999.999.999-99", "Nome Novo",
+                "novo@email.com", "Senha@2024!", Role.USER, true);
+        userService.atualizarUsuario(alterado);
+
+        assertEquals("Nome Novo", userService.buscarUsuarioPorId(usuario.getId()).orElseThrow().getName());
+    }
+
+    @Test
+    void nao_deve_atualizar_usuario_assumindo_o_login_de_outro() {
+        userService.adicionarUsuario(usuarioCom("joaosilva"));
+        User segundo = usuarioCom("mariasouza");
+        userService.adicionarUsuario(segundo);
+
+        User alterado = new User(segundo.getId(), "joaosilva", "123.456.789-00", "Fulano",
+                "fulano@email.com", "Senha@2024!", Role.USER, true);
+
+        assertThrows(ValidacaoUsuarioException.class, () -> userService.atualizarUsuario(alterado));
+        assertEquals("mariasouza",
+                userService.buscarUsuarioPorId(segundo.getId()).orElseThrow().getLogin());
+    }
+
     @Test
     void deve_adicionar_usuario_e_retornar_na_listagem() {
         User usuario = new User(UUID.randomUUID(), "joaosilva", "123.456.789-00", "João Silva", "joao@email.com", "Senha@2024!", Role.USER, true);
