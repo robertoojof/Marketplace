@@ -1,15 +1,19 @@
 package com.mps.shared.facade;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.mps.acessos.application.AcessoLogObserver;
 import com.mps.acessos.domain.AcessoLog;
 import com.mps.acessos.domain.IAcessoLogRepository;
 import com.mps.acessos.domain.TipoAcesso;
 import com.mps.shared.command.CommandInvoker;
 import com.mps.shared.factory.RepositoryFactory;
+import com.mps.shared.observer.AcessoObserver;
+import com.mps.shared.observer.AcessoSubject;
+import com.mps.shared.observer.EventoDeAcesso;
+import com.mps.users.application.NotificacaoVendedorObserver;
 import com.mps.users.application.UserService;
 import com.mps.users.application.command.AdicionarUsuarioCommand;
 import com.mps.users.application.command.AtualizarUsuarioCommand;
@@ -27,11 +31,22 @@ public final class UserFacade {
     private final IAcessoLogRepository acessoLogRepository;
     private final UserController userController;
     private final CommandInvoker invoker = new CommandInvoker();
+    private final AcessoSubject acessos = new AcessoSubject();
 
     private UserFacade(RepositoryFactory factory) {
         this.userRepository = factory.criarUserRepository();
         this.acessoLogRepository = factory.criarAcessoLogRepository();
         this.userController = new UserController(new UserService(userRepository));
+        this.acessos.registrar(new AcessoLogObserver(acessoLogRepository));
+        this.acessos.registrar(new NotificacaoVendedorObserver());
+    }
+
+    public void registrarObservador(AcessoObserver observador) {
+        acessos.registrar(observador);
+    }
+
+    public void removerObservador(AcessoObserver observador) {
+        acessos.remover(observador);
     }
 
     public static synchronized UserFacade getInstance(RepositoryFactory factory) {
@@ -104,6 +119,6 @@ public final class UserFacade {
     }
 
     private void registrarAcesso(UUID usuarioId, TipoAcesso acao) {
-        acessoLogRepository.salvar(new AcessoLog(UUID.randomUUID(), usuarioId, acao, Instant.now()));
+        acessos.notificar(EventoDeAcesso.agora(usuarioId, acao));
     }
 }
