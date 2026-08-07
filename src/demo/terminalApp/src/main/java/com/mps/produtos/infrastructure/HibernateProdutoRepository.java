@@ -10,6 +10,7 @@ import org.hibernate.Transaction;
 
 import com.mps.produtos.domain.IProdutoRepository;
 import com.mps.produtos.domain.Produto;
+import com.mps.shared.exception.RecursoNaoEncontradoException;
 import com.mps.shared.exception.RepositorioException;
 import com.mps.shared.infrastructure.HibernateSessionFactory;
 import com.mps.shared.logging.AppLoggerFactory;
@@ -90,13 +91,12 @@ public class HibernateProdutoRepository implements IProdutoRepository {
             tx = session.beginTransaction();
             Produto produto = session.find(Produto.class, id);
             if (produto == null) {
-                throw new RepositorioException("Produto não encontrado");
+                throw new RecursoNaoEncontradoException("Produto não encontrado");
             }
             produto.setAtivo(ativo);
             tx.commit();
-        } catch (RepositorioException e) {
+        } catch (RecursoNaoEncontradoException e) {
             if (tx != null) tx.rollback();
-            LOGGER.error(mensagemErro, e);
             throw e;
         } catch (Exception e) {
             if (tx != null) tx.rollback();

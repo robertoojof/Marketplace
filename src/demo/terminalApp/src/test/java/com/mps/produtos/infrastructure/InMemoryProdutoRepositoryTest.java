@@ -13,7 +13,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.mps.produtos.domain.Produto;
-import com.mps.shared.exception.RepositorioException;
+import com.mps.shared.exception.RecursoNaoEncontradoException;
 
 class InMemoryProdutoRepositoryTest {
 
@@ -75,7 +75,7 @@ class InMemoryProdutoRepositoryTest {
     void atualizar_deve_lancar_excecao_quando_produto_nao_existe() {
         Produto produto = new Produto(UUID.randomUUID(), "Fantasma", "N/A", true);
 
-        assertThrows(RepositorioException.class, () -> repository.atualizar(produto));
+        assertThrows(RecursoNaoEncontradoException.class, () -> repository.atualizar(produto));
     }
 
     @Test
@@ -90,7 +90,7 @@ class InMemoryProdutoRepositoryTest {
 
     @Test
     void deletar_deve_lancar_excecao_quando_produto_nao_existe() {
-        assertThrows(RepositorioException.class, () -> repository.deletar(UUID.randomUUID()));
+        assertThrows(RecursoNaoEncontradoException.class, () -> repository.deletar(UUID.randomUUID()));
     }
 
     @Test

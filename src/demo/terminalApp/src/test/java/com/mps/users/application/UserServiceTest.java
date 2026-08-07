@@ -13,7 +13,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.mps.shared.exception.AutorizacaoException;
-import com.mps.shared.exception.RepositorioException;
+import com.mps.shared.exception.RecursoNaoEncontradoException;
 import com.mps.users.domain.Role;
 import com.mps.users.domain.User;
 import com.mps.users.domain.exception.ValidacaoUsuarioException;
@@ -169,7 +169,7 @@ class UserServiceTest {
 
     @Test
     void removerUsuario_deve_lancar_excecao_quando_nao_existe() {
-        assertThrows(RepositorioException.class, () -> userService.removerUsuario(UUID.randomUUID()));
+        assertThrows(RecursoNaoEncontradoException.class, () -> userService.removerUsuario(UUID.randomUUID()));
     }
 
     @Test

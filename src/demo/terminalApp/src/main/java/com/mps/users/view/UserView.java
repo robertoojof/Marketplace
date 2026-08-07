@@ -7,6 +7,7 @@ import java.util.Scanner;
 import java.util.UUID;
 
 import com.mps.shared.exception.AutorizacaoException;
+import com.mps.shared.exception.RecursoNaoEncontradoException;
 import com.mps.shared.exception.RepositorioException;
 import com.mps.shared.security.SessaoUsuario;
 import com.mps.shared.facade.FacadeSingletonController;
@@ -125,7 +126,7 @@ public class UserView {
         } catch (ValidacaoUsuarioException e) {
             System.out.println("\nErros de validação:");
             e.getErros().forEach(erro -> System.out.println("  - " + erro));
-        } catch (RepositorioException e) {
+        } catch (RecursoNaoEncontradoException | RepositorioException e) {
             System.out.println("\nErro ao salvar usuário: " + e.getMessage());
         }
     }
@@ -141,7 +142,7 @@ public class UserView {
             for (User u : usuarios) {
                 imprimirUsuario(u);
             }
-        } catch (RepositorioException e) {
+        } catch (RecursoNaoEncontradoException | RepositorioException e) {
             System.out.println("\nErro ao buscar usuários: " + e.getMessage());
         }
     }
@@ -158,7 +159,7 @@ public class UserView {
             }
             System.out.println("\n--- Usuário encontrado ---");
             imprimirUsuario(usuario.get());
-        } catch (RepositorioException e) {
+        } catch (RecursoNaoEncontradoException | RepositorioException e) {
             System.out.println("\nErro ao buscar usuário: " + e.getMessage());
         }
     }
@@ -194,7 +195,7 @@ public class UserView {
         } catch (ValidacaoUsuarioException e) {
             System.out.println("\nErros de validação:");
             e.getErros().forEach(erro -> System.out.println("  - " + erro));
-        } catch (RepositorioException e) {
+        } catch (RecursoNaoEncontradoException | RepositorioException e) {
             System.out.println("\nErro ao atualizar usuário: " + e.getMessage());
         }
     }
@@ -213,7 +214,7 @@ public class UserView {
         try {
             facade.removerUsuario(id);
             System.out.println("Usuário removido com sucesso!");
-        } catch (RepositorioException e) {
+        } catch (RecursoNaoEncontradoException | RepositorioException e) {
             System.out.println("\nErro ao remover usuário: " + e.getMessage());
         }
     }
@@ -232,7 +233,7 @@ public class UserView {
             System.out.println("Usuário reativado com sucesso!");
         } catch (AutorizacaoException e) {
             System.out.println("\nErro de autorização: " + e.getMessage());
-        } catch (RepositorioException e) {
+        } catch (RecursoNaoEncontradoException | RepositorioException e) {
             System.out.println("\nErro ao reativar usuário: " + e.getMessage());
         }
     }

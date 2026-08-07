@@ -12,6 +12,7 @@ import com.mps.anuncios.domain.exception.ValidacaoAnuncioException;
 import com.mps.produtos.domain.Produto;
 import com.mps.shared.exception.AutorizacaoException;
 import com.mps.shared.exception.DesfazerException;
+import com.mps.shared.exception.RecursoNaoEncontradoException;
 import com.mps.shared.exception.RepositorioException;
 import com.mps.shared.facade.AnuncioFacade;
 import com.mps.shared.facade.ProdutoFacade;
@@ -97,7 +98,7 @@ public class AnuncioView {
             e.getErros().forEach(erro -> System.out.println("  - " + erro));
         } catch (AutorizacaoException e) {
             System.out.println("\nAcesso negado: " + e.getMessage());
-        } catch (RepositorioException e) {
+        } catch (RecursoNaoEncontradoException | RepositorioException e) {
             System.out.println("\nErro ao salvar anúncio: " + e.getMessage());
         }
     }
@@ -115,7 +116,7 @@ public class AnuncioView {
             }
         } catch (AutorizacaoException e) {
             System.out.println("\nAcesso negado: " + e.getMessage());
-        } catch (RepositorioException e) {
+        } catch (RecursoNaoEncontradoException | RepositorioException e) {
             System.out.println("\nErro ao buscar anúncios: " + e.getMessage());
         }
     }
@@ -134,7 +135,7 @@ public class AnuncioView {
             imprimirAnuncio(anuncio.get());
         } catch (AutorizacaoException e) {
             System.out.println("\nAcesso negado: " + e.getMessage());
-        } catch (RepositorioException e) {
+        } catch (RecursoNaoEncontradoException | RepositorioException e) {
             System.out.println("\nErro ao buscar anúncio: " + e.getMessage());
         }
     }
@@ -184,7 +185,7 @@ public class AnuncioView {
             e.getErros().forEach(erro -> System.out.println("  - " + erro));
         } catch (AutorizacaoException e) {
             System.out.println("\nAcesso negado: " + e.getMessage());
-        } catch (RepositorioException e) {
+        } catch (RecursoNaoEncontradoException | RepositorioException e) {
             System.out.println("\nErro ao atualizar anúncio: " + e.getMessage());
         }
     }
@@ -205,7 +206,7 @@ public class AnuncioView {
             System.out.println("Anúncio removido com sucesso!");
         } catch (AutorizacaoException e) {
             System.out.println("\nAcesso negado: " + e.getMessage());
-        } catch (RepositorioException e) {
+        } catch (RecursoNaoEncontradoException | RepositorioException e) {
             System.out.println("\nErro ao remover anúncio: " + e.getMessage());
         }
     }
@@ -219,7 +220,7 @@ public class AnuncioView {
             System.out.println("Anúncio reativado com sucesso!");
         } catch (AutorizacaoException e) {
             System.out.println("\nAcesso negado: " + e.getMessage());
-        } catch (RepositorioException e) {
+        } catch (RecursoNaoEncontradoException | RepositorioException e) {
             System.out.println("\nErro ao reativar anúncio: " + e.getMessage());
         }
     }
@@ -238,7 +239,7 @@ public class AnuncioView {
             System.out.println("\nNão foi possível desfazer: " + e.getMessage());
         } catch (AutorizacaoException e) {
             System.out.println("\nAcesso negado: " + e.getMessage());
-        } catch (RepositorioException e) {
+        } catch (RecursoNaoEncontradoException | RepositorioException e) {
             System.out.println("\nErro ao restaurar anúncio: " + e.getMessage());
         }
     }

@@ -12,7 +12,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.mps.shared.exception.RepositorioException;
+import com.mps.shared.exception.RecursoNaoEncontradoException;
 import com.mps.users.domain.Role;
 import com.mps.users.domain.User;
 
@@ -93,7 +93,7 @@ class InMemoryUserRepositoryTest {
     void atualizar_deve_lancar_excecao_quando_usuario_nao_existe() {
         User usuario = new User(UUID.randomUUID(), "fantasma", "000.000.000-00", "Fantasma", "f@f.com", "Senha@2024!", Role.USER, true);
 
-        assertThrows(RepositorioException.class, () -> repository.atualizar(usuario));
+        assertThrows(RecursoNaoEncontradoException.class, () -> repository.atualizar(usuario));
     }
 
     @Test
@@ -109,7 +109,7 @@ class InMemoryUserRepositoryTest {
 
     @Test
     void deletar_deve_lancar_excecao_quando_usuario_nao_existe() {
-        assertThrows(RepositorioException.class, () -> repository.deletar(UUID.randomUUID()));
+        assertThrows(RecursoNaoEncontradoException.class, () -> repository.deletar(UUID.randomUUID()));
     }
 
     @Test
@@ -141,6 +141,6 @@ class InMemoryUserRepositoryTest {
 
     @Test
     void reativar_deve_lancar_excecao_quando_usuario_nao_existe() {
-        assertThrows(RepositorioException.class, () -> repository.reativar(UUID.randomUUID()));
+        assertThrows(RecursoNaoEncontradoException.class, () -> repository.reativar(UUID.randomUUID()));
     }
 }

@@ -10,6 +10,7 @@ import com.mps.produtos.application.MontadorDeCatalogo;
 import com.mps.produtos.domain.Produto;
 import com.mps.produtos.domain.catalogo.CategoriaCatalogo;
 import com.mps.produtos.domain.exception.ValidacaoProdutoException;
+import com.mps.shared.exception.RecursoNaoEncontradoException;
 import com.mps.shared.exception.RepositorioException;
 import com.mps.shared.facade.ProdutoFacade;
 
@@ -79,7 +80,7 @@ public class ProdutoView {
         } catch (ValidacaoProdutoException e) {
             System.out.println("\nErros de validação:");
             e.getErros().forEach(erro -> System.out.println("  - " + erro));
-        } catch (RepositorioException e) {
+        } catch (RecursoNaoEncontradoException | RepositorioException e) {
             System.out.println("\nErro ao salvar produto: " + e.getMessage());
         }
     }
@@ -95,7 +96,7 @@ public class ProdutoView {
             for (Produto p : produtos) {
                 imprimirProduto(p);
             }
-        } catch (RepositorioException e) {
+        } catch (RecursoNaoEncontradoException | RepositorioException e) {
             System.out.println("\nErro ao buscar produtos: " + e.getMessage());
         }
     }
@@ -112,7 +113,7 @@ public class ProdutoView {
             }
             System.out.println("\n--- Produto encontrado ---");
             imprimirProduto(produto.get());
-        } catch (RepositorioException e) {
+        } catch (RecursoNaoEncontradoException | RepositorioException e) {
             System.out.println("\nErro ao buscar produto: " + e.getMessage());
         }
     }
@@ -140,7 +141,7 @@ public class ProdutoView {
         } catch (ValidacaoProdutoException e) {
             System.out.println("\nErros de validação:");
             e.getErros().forEach(erro -> System.out.println("  - " + erro));
-        } catch (RepositorioException e) {
+        } catch (RecursoNaoEncontradoException | RepositorioException e) {
             System.out.println("\nErro ao atualizar produto: " + e.getMessage());
         }
     }
@@ -159,7 +160,7 @@ public class ProdutoView {
         try {
             produtoFacade.removerProduto(id);
             System.out.println("Produto removido com sucesso!");
-        } catch (RepositorioException e) {
+        } catch (RecursoNaoEncontradoException | RepositorioException e) {
             System.out.println("\nErro ao remover produto: " + e.getMessage());
         }
     }
@@ -171,7 +172,7 @@ public class ProdutoView {
         try {
             produtoFacade.reativarProduto(id);
             System.out.println("Produto reativado com sucesso!");
-        } catch (RepositorioException e) {
+        } catch (RecursoNaoEncontradoException | RepositorioException e) {
             System.out.println("\nErro ao reativar produto: " + e.getMessage());
         }
     }
@@ -185,7 +186,7 @@ public class ProdutoView {
             }
             System.out.println("\n--- Catálogo por categoria ---");
             System.out.print(catalogo.exibir(0));
-        } catch (RepositorioException e) {
+        } catch (RecursoNaoEncontradoException | RepositorioException e) {
             System.out.println("\nErro ao montar catálogo: " + e.getMessage());
         }
     }

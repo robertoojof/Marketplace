@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
 
 import com.mps.anuncios.domain.Anuncio;
 import com.mps.produtos.domain.Produto;
-import com.mps.shared.exception.RepositorioException;
+import com.mps.shared.exception.RecursoNaoEncontradoException;
 import com.mps.users.domain.Role;
 import com.mps.users.domain.User;
 
@@ -74,7 +74,7 @@ class InMemoryAnuncioRepositoryTest {
     void atualizar_deve_lancar_excecao_quando_anuncio_nao_existe() {
         Anuncio anuncio = novoAnuncio(vendedor);
 
-        assertThrows(RepositorioException.class, () -> repository.atualizar(anuncio));
+        assertThrows(RecursoNaoEncontradoException.class, () -> repository.atualizar(anuncio));
     }
 
     @Test

@@ -7,7 +7,7 @@ import java.util.UUID;
 
 import com.mps.anuncios.domain.Anuncio;
 import com.mps.anuncios.domain.IAnuncioRepository;
-import com.mps.shared.exception.RepositorioException;
+import com.mps.shared.exception.RecursoNaoEncontradoException;
 
 public class InMemoryAnuncioRepository implements IAnuncioRepository {
 
@@ -70,6 +70,6 @@ public class InMemoryAnuncioRepository implements IAnuncioRepository {
                 return i;
             }
         }
-        throw new RepositorioException("Anúncio não encontrado");
+        throw new RecursoNaoEncontradoException("Anúncio não encontrado");
     }
 }

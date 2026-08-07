@@ -7,7 +7,7 @@ import java.util.UUID;
 
 import com.mps.produtos.domain.IProdutoRepository;
 import com.mps.produtos.domain.Produto;
-import com.mps.shared.exception.RepositorioException;
+import com.mps.shared.exception.RecursoNaoEncontradoException;
 
 public class InMemoryProdutoRepository implements IProdutoRepository {
 
@@ -56,6 +56,6 @@ public class InMemoryProdutoRepository implements IProdutoRepository {
                 return i;
             }
         }
-        throw new RepositorioException("Produto não encontrado");
+        throw new RecursoNaoEncontradoException("Produto não encontrado");
     }
 }

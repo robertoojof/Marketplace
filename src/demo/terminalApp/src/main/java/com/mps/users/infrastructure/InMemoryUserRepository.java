@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import com.mps.shared.exception.RepositorioException;
+import com.mps.shared.exception.RecursoNaoEncontradoException;
 import com.mps.users.domain.IUserRepository;
 import com.mps.users.domain.User;
 
@@ -65,6 +65,6 @@ public class InMemoryUserRepository implements IUserRepository {
                 return i;
             }
         }
-        throw new RepositorioException("Usuário não encontrado");
+        throw new RecursoNaoEncontradoException("Usuário não encontrado");
     }
 }

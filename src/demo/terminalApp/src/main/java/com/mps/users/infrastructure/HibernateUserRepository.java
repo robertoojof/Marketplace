@@ -8,6 +8,7 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 
+import com.mps.shared.exception.RecursoNaoEncontradoException;
 import com.mps.shared.exception.RepositorioException;
 import com.mps.shared.infrastructure.HibernateSessionFactory;
 import com.mps.shared.logging.AppLoggerFactory;
@@ -102,13 +103,12 @@ public class HibernateUserRepository implements IUserRepository {
             tx = session.beginTransaction();
             User usuario = session.find(User.class, id);
             if (usuario == null) {
-                throw new RepositorioException("Usuário não encontrado");
+                throw new RecursoNaoEncontradoException("Usuário não encontrado");
             }
             usuario.setAtivo(ativo);
             tx.commit();
-        } catch (RepositorioException e) {
+        } catch (RecursoNaoEncontradoException e) {
             if (tx != null) tx.rollback();
-            LOGGER.error(mensagemErro, e);
             throw e;
         } catch (Exception e) {
             if (tx != null) tx.rollback();

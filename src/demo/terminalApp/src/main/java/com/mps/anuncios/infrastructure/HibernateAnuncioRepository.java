@@ -11,6 +11,7 @@ import org.hibernate.Transaction;
 
 import com.mps.anuncios.domain.Anuncio;
 import com.mps.anuncios.domain.IAnuncioRepository;
+import com.mps.shared.exception.RecursoNaoEncontradoException;
 import com.mps.shared.exception.RepositorioException;
 import com.mps.shared.infrastructure.HibernateSessionFactory;
 import com.mps.shared.logging.AppLoggerFactory;
@@ -126,13 +127,12 @@ public class HibernateAnuncioRepository implements IAnuncioRepository {
             tx = session.beginTransaction();
             Anuncio anuncio = session.find(Anuncio.class, id);
             if (anuncio == null) {
-                throw new RepositorioException("Anúncio não encontrado");
+                throw new RecursoNaoEncontradoException("Anúncio não encontrado");
             }
             anuncio.setAtivo(ativo);
             tx.commit();
-        } catch (RepositorioException e) {
+        } catch (RecursoNaoEncontradoException e) {
             if (tx != null) tx.rollback();
-            LOGGER.error(mensagemErro, e);
             throw e;
         } catch (Exception e) {
             if (tx != null) tx.rollback();
