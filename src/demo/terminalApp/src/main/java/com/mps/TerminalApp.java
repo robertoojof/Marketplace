@@ -1,11 +1,13 @@
 package com.mps;
 
 import java.util.InputMismatchException;
+import java.util.List;
 import java.util.Scanner;
 
 import com.mps.anuncios.view.AnuncioView;
 import com.mps.produtos.view.ProdutoView;
 import com.mps.relatorios.view.RelatorioAcessoView;
+import com.mps.shared.command.RegistroComando;
 import com.mps.shared.facade.AnuncioFacade;
 import com.mps.shared.facade.FacadeSingletonController;
 import com.mps.shared.facade.ProdutoFacade;
@@ -39,6 +41,7 @@ public class TerminalApp {
                 System.out.println("  3. Gerenciar Anúncios");
                 System.out.println("  4. Total de entidades cadastradas");
                 System.out.println("  5. Relatórios de acesso");
+                System.out.println("  6. Histórico de comandos executados");
                 System.out.println("  7. Sair");
                 System.out.println("=============================");
                 System.out.print("Digite a sua escolha: ");
@@ -52,6 +55,7 @@ public class TerminalApp {
                     case 3 -> anuncioView.anuncioMenu();
                     case 4 -> exibirTotalEntidades(facade);
                     case 5 -> relatorioAcessoView.relatorioMenu();
+                    case 6 -> exibirHistoricoDeComandos(facade);
                     case 7 -> {
                         System.out.println("Encerrando o programa...");
                         scanner.close();
@@ -74,6 +78,19 @@ public class TerminalApp {
         System.out.println("Produtos ativos: " + facade.contarProdutos());
         System.out.println("Anúncios ativos: " + facade.contarAnuncios());
         System.out.println("Total: " + facade.contarEntidadesCadastradas());
+    }
+
+    private static void exibirHistoricoDeComandos(FacadeSingletonController facade) {
+        System.out.println("\n=============================");
+        System.out.println("   Histórico de comandos");
+        System.out.println("=============================");
+
+        List<RegistroComando> historico = facade.historicoDeComandos();
+        if (historico.isEmpty()) {
+            System.out.println("Nenhum comando executado nesta sessão.");
+            return;
+        }
+        historico.forEach(registro -> System.out.println("  " + registro));
     }
 
     private static boolean selecionarArmazenamento(Scanner scanner) {

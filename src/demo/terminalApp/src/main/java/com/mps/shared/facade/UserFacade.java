@@ -8,8 +8,13 @@ import java.util.UUID;
 import com.mps.acessos.domain.AcessoLog;
 import com.mps.acessos.domain.IAcessoLogRepository;
 import com.mps.acessos.domain.TipoAcesso;
+import com.mps.shared.command.CommandInvoker;
 import com.mps.shared.factory.RepositoryFactory;
 import com.mps.users.application.UserService;
+import com.mps.users.application.command.AdicionarUsuarioCommand;
+import com.mps.users.application.command.AtualizarUsuarioCommand;
+import com.mps.users.application.command.ReativarUsuarioCommand;
+import com.mps.users.application.command.RemoverUsuarioCommand;
 import com.mps.users.domain.IUserRepository;
 import com.mps.users.domain.User;
 import com.mps.users.presentation.controller.UserController;
@@ -21,6 +26,7 @@ public final class UserFacade {
     private final IUserRepository userRepository;
     private final IAcessoLogRepository acessoLogRepository;
     private final UserController userController;
+    private final CommandInvoker invoker = new CommandInvoker();
 
     private UserFacade(RepositoryFactory factory) {
         this.userRepository = factory.criarUserRepository();
@@ -46,12 +52,16 @@ public final class UserFacade {
         return userRepository;
     }
 
+    CommandInvoker getInvoker() {
+        return invoker;
+    }
+
     static synchronized void reset() {
         instance = null;
     }
 
     public void adicionarUsuario(User user) {
-        userController.adicionarUsuario(user);
+        invoker.executar(new AdicionarUsuarioCommand(userController, user));
         registrarAcesso(user.getId(), TipoAcesso.CRIACAO);
     }
 
@@ -70,18 +80,18 @@ public final class UserFacade {
     }
 
     public User atualizarUsuario(User user) {
-        User atualizado = userController.atualizarUsuario(user);
+        User atualizado = invoker.executar(new AtualizarUsuarioCommand(userController, user));
         registrarAcesso(atualizado.getId(), TipoAcesso.ATUALIZACAO);
         return atualizado;
     }
 
     public void removerUsuario(UUID id) {
-        userController.removerUsuario(id);
+        invoker.executar(new RemoverUsuarioCommand(userController, id));
         registrarAcesso(id, TipoAcesso.REMOCAO);
     }
 
     public void reativarUsuario(UUID idAlvo, String loginAutorizador, String senhaAutorizador) {
-        userController.reativarUsuario(idAlvo, loginAutorizador, senhaAutorizador);
+        invoker.executar(new ReativarUsuarioCommand(userController, idAlvo, loginAutorizador, senhaAutorizador));
         registrarAcesso(idAlvo, TipoAcesso.REATIVACAO);
     }
 

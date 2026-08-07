@@ -5,9 +5,14 @@ import java.util.Optional;
 import java.util.UUID;
 
 import com.mps.produtos.application.ProdutoService;
+import com.mps.produtos.application.command.AdicionarProdutoCommand;
+import com.mps.produtos.application.command.AtualizarProdutoCommand;
+import com.mps.produtos.application.command.ReativarProdutoCommand;
+import com.mps.produtos.application.command.RemoverProdutoCommand;
 import com.mps.produtos.domain.IProdutoRepository;
 import com.mps.produtos.domain.Produto;
 import com.mps.produtos.presentation.controller.ProdutoController;
+import com.mps.shared.command.CommandInvoker;
 import com.mps.shared.factory.RepositoryFactory;
 
 public final class ProdutoFacade {
@@ -16,6 +21,7 @@ public final class ProdutoFacade {
 
     private final IProdutoRepository produtoRepository;
     private final ProdutoController produtoController;
+    private final CommandInvoker invoker = new CommandInvoker();
 
     private ProdutoFacade(RepositoryFactory factory) {
         this.produtoRepository = factory.criarProdutoRepository();
@@ -40,12 +46,16 @@ public final class ProdutoFacade {
         return produtoRepository;
     }
 
+    CommandInvoker getInvoker() {
+        return invoker;
+    }
+
     static synchronized void reset() {
         instance = null;
     }
 
     public void adicionarProduto(Produto produto) {
-        produtoController.adicionarProduto(produto);
+        invoker.executar(new AdicionarProdutoCommand(produtoController, produto));
     }
 
     public List<Produto> listarProdutos() {
@@ -57,15 +67,15 @@ public final class ProdutoFacade {
     }
 
     public Produto atualizarProduto(Produto produto) {
-        return produtoController.atualizarProduto(produto);
+        return invoker.executar(new AtualizarProdutoCommand(produtoController, produto));
     }
 
     public void removerProduto(UUID id) {
-        produtoController.removerProduto(id);
+        invoker.executar(new RemoverProdutoCommand(produtoController, id));
     }
 
     public void reativarProduto(UUID id) {
-        produtoController.reativarProduto(id);
+        invoker.executar(new ReativarProdutoCommand(produtoController, id));
     }
 
     public int contarProdutos() {

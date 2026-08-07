@@ -4,10 +4,18 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.mps.anuncios.application.AnuncioCaretaker;
 import com.mps.anuncios.application.AnuncioService;
+import com.mps.anuncios.application.command.AdicionarAnuncioCommand;
+import com.mps.anuncios.application.command.AtualizarAnuncioCommand;
+import com.mps.anuncios.application.command.DesativarAnunciosDoVendedorCommand;
+import com.mps.anuncios.application.command.DesfazerAtualizacaoAnuncioCommand;
+import com.mps.anuncios.application.command.ReativarAnuncioCommand;
+import com.mps.anuncios.application.command.RemoverAnuncioCommand;
 import com.mps.anuncios.domain.Anuncio;
 import com.mps.anuncios.domain.IAnuncioRepository;
 import com.mps.anuncios.presentation.controller.AnuncioController;
+import com.mps.shared.command.CommandInvoker;
 import com.mps.shared.factory.RepositoryFactory;
 
 public final class AnuncioFacade {
@@ -15,6 +23,8 @@ public final class AnuncioFacade {
     private static AnuncioFacade instance;
 
     private final AnuncioController anuncioController;
+    private final AnuncioCaretaker caretaker = new AnuncioCaretaker();
+    private final CommandInvoker invoker = new CommandInvoker();
 
     private AnuncioFacade(RepositoryFactory factory) {
         IAnuncioRepository anuncioRepository = factory.criarAnuncioRepository();
@@ -41,8 +51,12 @@ public final class AnuncioFacade {
         instance = null;
     }
 
+    CommandInvoker getInvoker() {
+        return invoker;
+    }
+
     public void adicionarAnuncio(Anuncio anuncio) {
-        anuncioController.adicionarAnuncio(anuncio);
+        invoker.executar(new AdicionarAnuncioCommand(anuncioController, anuncio));
     }
 
     public List<Anuncio> listarAnuncios() {
@@ -58,19 +72,27 @@ public final class AnuncioFacade {
     }
 
     public Anuncio atualizarAnuncio(Anuncio anuncio) {
-        return anuncioController.atualizarAnuncio(anuncio);
+        return invoker.executar(new AtualizarAnuncioCommand(anuncioController, caretaker, anuncio));
     }
 
     public void removerAnuncio(UUID id) {
-        anuncioController.removerAnuncio(id);
+        invoker.executar(new RemoverAnuncioCommand(anuncioController, id));
     }
 
     public void reativarAnuncio(UUID id) {
-        anuncioController.reativarAnuncio(id);
+        invoker.executar(new ReativarAnuncioCommand(anuncioController, id));
     }
 
     public void desativarAnunciosDoVendedor(UUID vendedorId) {
-        anuncioController.desativarAnunciosDoVendedor(vendedorId);
+        invoker.executar(new DesativarAnunciosDoVendedorCommand(anuncioController, vendedorId));
+    }
+
+    public Anuncio desfazerUltimaAtualizacao() {
+        return invoker.executar(new DesfazerAtualizacaoAnuncioCommand(anuncioController, caretaker));
+    }
+
+    public boolean possuiAtualizacaoParaDesfazer() {
+        return caretaker.possuiEstadoSalvo();
     }
 
     public int contarAnuncios() {

@@ -1,7 +1,11 @@
 package com.mps.shared.facade;
 
+import java.util.Comparator;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Stream;
 
+import com.mps.shared.command.RegistroComando;
 import com.mps.shared.factory.HibernateRepositoryFactory;
 import com.mps.shared.factory.InMemoryRepositoryFactory;
 import com.mps.shared.factory.RepositoryFactory;
@@ -52,5 +56,15 @@ public final class FacadeSingletonController {
 
     public int contarEntidadesCadastradas() {
         return contarUsuarios() + contarProdutos() + contarAnuncios();
+    }
+
+    public List<RegistroComando> historicoDeComandos() {
+        return Stream.of(
+                        UserFacade.getInstance().getInvoker(),
+                        ProdutoFacade.getInstance().getInvoker(),
+                        AnuncioFacade.getInstance().getInvoker())
+                .flatMap(executor -> executor.getHistorico().stream())
+                .sorted(Comparator.comparing(RegistroComando::momento))
+                .toList();
     }
 }

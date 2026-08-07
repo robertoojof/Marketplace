@@ -10,6 +10,7 @@ import java.util.UUID;
 import com.mps.anuncios.domain.Anuncio;
 import com.mps.anuncios.domain.exception.ValidacaoAnuncioException;
 import com.mps.produtos.domain.Produto;
+import com.mps.shared.exception.DesfazerException;
 import com.mps.shared.exception.RepositorioException;
 import com.mps.shared.facade.AnuncioFacade;
 import com.mps.shared.facade.ProdutoFacade;
@@ -43,7 +44,8 @@ public class AnuncioView {
                 System.out.println("  4. Atualizar anúncio");
                 System.out.println("  5. Remover anúncio");
                 System.out.println("  6. Reativar anúncio");
-                System.out.println("  7. Voltar");
+                System.out.println("  7. Desfazer última atualização");
+                System.out.println("  8. Voltar");
                 System.out.println("=============================");
                 System.out.print("Digite a sua escolha: ");
 
@@ -57,7 +59,8 @@ public class AnuncioView {
                     case 4 -> atualizarAnuncio();
                     case 5 -> removerAnuncio();
                     case 6 -> reativarAnuncio();
-                    case 7 -> {
+                    case 7 -> desfazerUltimaAtualizacao();
+                    case 8 -> {
                         System.out.println("Saindo...");
                         return;
                     }
@@ -139,31 +142,36 @@ public class AnuncioView {
                 System.out.println("Anúncio não encontrado.");
                 return;
             }
-            Anuncio anuncio = existente.get();
+            Anuncio atual = existente.get();
 
-            System.out.printf("Preço [%s] (deixe em branco para manter): ", anuncio.getPreco());
+            BigDecimal preco = atual.getPreco();
+            System.out.printf("Preço [%s] (deixe em branco para manter): ", preco);
             String precoEntrada = scanner.nextLine();
             if (!precoEntrada.isBlank()) {
                 try {
-                    anuncio.setPreco(new BigDecimal(precoEntrada));
+                    preco = new BigDecimal(precoEntrada);
                 } catch (NumberFormatException e) {
                     System.out.println("Preço inválido, mantendo o valor atual.");
                 }
             }
 
-            System.out.printf("Quantidade em estoque [%d] (deixe em branco para manter): ",
-                    anuncio.getQuantidadeEmEstoque());
+            Integer quantidade = atual.getQuantidadeEmEstoque();
+            System.out.printf("Quantidade em estoque [%d] (deixe em branco para manter): ", quantidade);
             String quantidadeEntrada = scanner.nextLine();
             if (!quantidadeEntrada.isBlank()) {
                 try {
-                    anuncio.setQuantidadeEmEstoque(Integer.parseInt(quantidadeEntrada));
+                    quantidade = Integer.parseInt(quantidadeEntrada);
                 } catch (NumberFormatException e) {
                     System.out.println("Quantidade inválida, mantendo o valor atual.");
                 }
             }
 
-            anuncioFacade.atualizarAnuncio(anuncio);
+            Anuncio alterado = new Anuncio(atual.getId(), atual.getProduto(), atual.getVendedor(),
+                    preco, quantidade, atual.isAtivo());
+
+            anuncioFacade.atualizarAnuncio(alterado);
             System.out.println("Anúncio atualizado com sucesso!");
+            System.out.println("(use a opção 7 para desfazer esta atualização)");
         } catch (ValidacaoAnuncioException e) {
             System.out.println("\nErros de validação:");
             e.getErros().forEach(erro -> System.out.println("  - " + erro));
@@ -200,6 +208,23 @@ public class AnuncioView {
             System.out.println("Anúncio reativado com sucesso!");
         } catch (RepositorioException e) {
             System.out.println("\nErro ao reativar anúncio: " + e.getMessage());
+        }
+    }
+
+    private void desfazerUltimaAtualizacao() {
+        if (!anuncioFacade.possuiAtualizacaoParaDesfazer()) {
+            System.out.println("Não há atualização de anúncio para desfazer.");
+            return;
+        }
+
+        try {
+            Anuncio restaurado = anuncioFacade.desfazerUltimaAtualizacao();
+            System.out.println("Última atualização desfeita com sucesso!");
+            imprimirAnuncio(restaurado);
+        } catch (DesfazerException e) {
+            System.out.println("\nNão foi possível desfazer: " + e.getMessage());
+        } catch (RepositorioException e) {
+            System.out.println("\nErro ao restaurar anúncio: " + e.getMessage());
         }
     }
 

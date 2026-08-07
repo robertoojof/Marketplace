@@ -55,4 +55,17 @@ public class Anuncio {
 
     @Column(name = "ativo", nullable = false)
     private boolean ativo;
+
+    public AnuncioMemento criarMemento() {
+        return new AnuncioMemento(id, produto, vendedor, preco, quantidadeEmEstoque, ativo);
+    }
+
+    public void restaurar(AnuncioMemento memento) {
+        this.id = memento.getAnuncioId();
+        this.produto = memento.getProduto();
+        this.vendedor = memento.getVendedor();
+        this.preco = memento.getPreco();
+        this.quantidadeEmEstoque = memento.getQuantidadeEmEstoque();
+        this.ativo = memento.isAtivo();
+    }
 }
