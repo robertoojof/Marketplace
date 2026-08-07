@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.hibernate.Hibernate;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -18,6 +19,9 @@ import com.mps.shared.logging.Logger;
 public class HibernateAnuncioRepository implements IAnuncioRepository {
 
     private static final Logger LOGGER = AppLoggerFactory.getLogger(HibernateAnuncioRepository.class);
+
+    private static final String SELECT_ANUNCIO =
+            "select a from Anuncio a join fetch a.produto join fetch a.vendedor v";
 
     private final SessionFactory sessionFactory;
 
@@ -42,7 +46,7 @@ public class HibernateAnuncioRepository implements IAnuncioRepository {
     @Override
     public List<Anuncio> buscarTodos() {
         try (Session session = sessionFactory.openSession()) {
-            return session.createQuery("from Anuncio", Anuncio.class).list();
+            return session.createQuery(SELECT_ANUNCIO, Anuncio.class).list();
         } catch (Exception e) {
             LOGGER.error("Erro ao buscar anúncios do banco de dados", e);
             throw new RepositorioException("Erro ao buscar anúncios do banco de dados", e);
@@ -52,7 +56,9 @@ public class HibernateAnuncioRepository implements IAnuncioRepository {
     @Override
     public Optional<Anuncio> buscarPorId(UUID id) {
         try (Session session = sessionFactory.openSession()) {
-            return Optional.ofNullable(session.find(Anuncio.class, id));
+            return session.createQuery(SELECT_ANUNCIO + " where a.id = :id", Anuncio.class)
+                    .setParameter("id", id)
+                    .uniqueResultOptional();
         } catch (Exception e) {
             LOGGER.error("Erro ao buscar anúncio no banco de dados", e);
             throw new RepositorioException("Erro ao buscar anúncio no banco de dados", e);
@@ -62,7 +68,7 @@ public class HibernateAnuncioRepository implements IAnuncioRepository {
     @Override
     public List<Anuncio> buscarPorVendedor(UUID vendedorId) {
         try (Session session = sessionFactory.openSession()) {
-            return session.createQuery("from Anuncio where vendedor.id = :vendedorId", Anuncio.class)
+            return session.createQuery(SELECT_ANUNCIO + " where v.id = :vendedorId", Anuncio.class)
                     .setParameter("vendedorId", vendedorId)
                     .list();
         } catch (Exception e) {
@@ -77,6 +83,8 @@ public class HibernateAnuncioRepository implements IAnuncioRepository {
         try (Session session = sessionFactory.openSession()) {
             tx = session.beginTransaction();
             Anuncio atualizado = session.merge(anuncio);
+            Hibernate.initialize(atualizado.getProduto());
+            Hibernate.initialize(atualizado.getVendedor());
             tx.commit();
             return atualizado;
         } catch (Exception e) {
