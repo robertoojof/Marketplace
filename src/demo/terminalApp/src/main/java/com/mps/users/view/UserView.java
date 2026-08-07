@@ -70,6 +70,12 @@ public class UserView {
         }
     }
 
+    private String lerCampo(String rotulo, String valorAtual) {
+        System.out.printf("%s [%s]: ", rotulo, valorAtual);
+        String entrada = scanner.nextLine();
+        return entrada.isBlank() ? valorAtual : entrada;
+    }
+
     private Role lerPapel() {
         System.out.print("Papel (1 - Usuário comum, 2 - Administrador) [1]: ");
         return "2".equals(scanner.nextLine().trim()) ? Role.ADMIN : Role.USER;
@@ -167,29 +173,23 @@ public class UserView {
                 System.out.println("Usuário não encontrado.");
                 return;
             }
-            User usuario = existente.get();
+            User atual = existente.get();
 
-            System.out.printf("Login [%s]: ", usuario.getLogin());
-            String login = scanner.nextLine();
-            if (!login.isBlank()) usuario.setLogin(login);
-
-            System.out.printf("Nome [%s]: ", usuario.getName());
-            String nome = scanner.nextLine();
-            if (!nome.isBlank()) usuario.setName(nome);
-
-            System.out.printf("CPF [%s]: ", usuario.getCpf());
-            String cpf = scanner.nextLine();
-            if (!cpf.isBlank()) usuario.setCpf(cpf);
-
-            System.out.printf("Email [%s]: ", usuario.getEmail());
-            String email = scanner.nextLine();
-            if (!email.isBlank()) usuario.setEmail(email);
+            String login = lerCampo("Login", atual.getLogin());
+            String nome = lerCampo("Nome", atual.getName());
+            String cpf = lerCampo("CPF", atual.getCpf());
+            String email = lerCampo("Email", atual.getEmail());
 
             System.out.print("Senha (deixe em branco para manter a atual): ");
-            String senha = scanner.nextLine();
-            if (!senha.isBlank()) usuario.setPassword(senha);
+            String senhaEntrada = scanner.nextLine();
+            String senha = senhaEntrada.isBlank() ? atual.getPassword() : senhaEntrada;
 
-            userFacade.atualizarUsuario(usuario);
+            // Monta uma nova instância: mutar a existente gravaria os dados no
+            // repositório em memória mesmo quando a validação recusa a alteração.
+            User alterado = new User(atual.getId(), login, cpf, nome, email, senha,
+                    atual.getRole(), atual.isAtivo());
+
+            userFacade.atualizarUsuario(alterado);
             System.out.println("Usuário atualizado com sucesso!");
         } catch (ValidacaoUsuarioException e) {
             System.out.println("\nErros de validação:");

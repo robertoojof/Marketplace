@@ -127,19 +127,15 @@ public class ProdutoView {
                 System.out.println("Produto não encontrado.");
                 return;
             }
-            Produto produto = existente.get();
+            Produto atual = existente.get();
 
-            System.out.printf("Nome [%s]: ", produto.getNome());
-            String nome = scanner.nextLine();
-            if (!nome.isBlank()) produto.setNome(nome);
+            String nome = lerCampo("Nome", atual.getNome());
+            String descricao = lerCampo("Descrição", atual.getDescricao());
+            String categoria = lerCategoria(atual.getCategoria());
 
-            System.out.printf("Descrição [%s]: ", produto.getDescricao());
-            String descricao = scanner.nextLine();
-            if (!descricao.isBlank()) produto.setDescricao(descricao);
+            Produto alterado = new Produto(atual.getId(), nome, descricao, categoria, atual.isAtivo());
 
-            produto.setCategoria(lerCategoria(produto.getCategoria()));
-
-            produtoFacade.atualizarProduto(produto);
+            produtoFacade.atualizarProduto(alterado);
             System.out.println("Produto atualizado com sucesso!");
         } catch (ValidacaoProdutoException e) {
             System.out.println("\nErros de validação:");
@@ -192,6 +188,12 @@ public class ProdutoView {
         } catch (RepositorioException e) {
             System.out.println("\nErro ao montar catálogo: " + e.getMessage());
         }
+    }
+
+    private String lerCampo(String rotulo, String valorAtual) {
+        System.out.printf("%s [%s]: ", rotulo, valorAtual);
+        String entrada = scanner.nextLine();
+        return entrada.isBlank() ? valorAtual : entrada;
     }
 
     private String lerCategoria(String categoriaAtual) {
