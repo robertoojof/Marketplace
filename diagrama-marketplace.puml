@@ -1,0 +1,498 @@
+@startuml
+title Marketplace — Diagrama de Classes
+
+top to bottom direction
+hide empty members
+skinparam shadowing false
+skinparam linetype ortho
+skinparam classAttributeIconSize 0
+skinparam legendFontSize 10
+
+skinparam classBackgroundColor<<Command>> #2196F3
+skinparam classFontColor<<Command>> white
+skinparam classBackgroundColor<<Observer>> #4CAF50
+skinparam classFontColor<<Observer>> white
+skinparam classBackgroundColor<<Facade>> #FF9800
+skinparam classFontColor<<Facade>> white
+skinparam classBackgroundColor<<AbstractFactory>> #F44336
+skinparam classFontColor<<AbstractFactory>> white
+skinparam classBackgroundColor<<Composite>> #9C27B0
+skinparam classFontColor<<Composite>> white
+skinparam classBackgroundColor<<TemplateMethod>> #FFC107
+skinparam classBackgroundColor<<Memento>> #00BCD4
+skinparam classFontColor<<Memento>> white
+skinparam classBackgroundColor<<Proxy>> #E91E63
+skinparam classFontColor<<Proxy>> white
+skinparam classBackgroundColor<<Adapter>> #795548
+skinparam classFontColor<<Adapter>> white
+skinparam classBackgroundColor<<Repository>> #9E9E9E
+skinparam classFontColor<<Repository>> white
+skinparam classBackgroundColor<<Application>> #546E7A
+skinparam classFontColor<<Application>> white
+skinparam classBackgroundColor<<View>> #37474F
+skinparam classFontColor<<View>> white
+skinparam classBackgroundColor<<external>> #BDBDBD
+
+package "Command" {
+  interface CommandInterface<T> <<Command>> {
+    + executar(): T
+    + descricao(): String
+  }
+
+  class CommandInvoker <<Command>> {
+    - logger: Logger
+    - historico: Deque<RegistroComando>
+    + executar<T>(comando: CommandInterface<T>): T
+    + getHistorico(): List<RegistroComando>
+    + limparHistorico(): void
+  }
+
+  class RegistroComando <<record>> <<Command>> {
+    + momento: Instant
+    + descricao: String
+  }
+
+  class AdicionarAnuncioCmd <<Command>>
+  class AtualizarAnuncioCmd <<Command>>
+  class RemoverAnuncioCmd <<Command>>
+  class ReativarAnuncioCmd <<Command>>
+  class DesativarAnunciosVendedorCmd <<Command>>
+  class DesfazerAtualizacaoCmd <<Command>>
+  class AdicionarProdutoCmd <<Command>>
+  class AtualizarProdutoCmd <<Command>>
+  class RemoverProdutoCmd <<Command>>
+  class ReativarProdutoCmd <<Command>>
+  class AdicionarUsuarioCmd <<Command>>
+  class AtualizarUsuarioCmd <<Command>>
+  class RemoverUsuarioCmd <<Command>>
+  class ReativarUsuarioCmd <<Command>>
+}
+
+package "Observer" {
+  interface AcessoObserver <<Observer>> {
+    + aoOcorrer(evento: EventoDeAcesso): void
+  }
+
+  class AcessoSubject <<Observer>> {
+    - observadores: List<AcessoObserver>
+    + registrar(observador: AcessoObserver): void
+    + remover(observador: AcessoObserver): void
+    + notificar(evento: EventoDeAcesso): void
+  }
+
+  class EventoDeAcesso <<record>> <<Observer>> {
+    + usuarioId: UUID
+    + acao: TipoAcesso
+    + momento: Instant
+  }
+
+  class AcessoLogObserver <<Observer>> {
+    + aoOcorrer(evento: EventoDeAcesso): void
+  }
+
+  class NotificacaoVendedorObserver <<Observer>> {
+    + aoOcorrer(evento: EventoDeAcesso): void
+  }
+}
+
+package "Facade e Singleton" {
+  class FacadeSingletonController <<Facade>> {
+    {static} - instance: FacadeSingletonController
+    {static} + getInstance(inMemory: boolean): FacadeSingletonController
+    + removerUsuario(id: UUID): void
+    + contarEntidadesCadastradas(): int
+    + historicoDeComandos(): List<RegistroComando>
+  }
+
+  class AnuncioFacade <<Facade>> {
+    {static} - instance: AnuncioFacade
+    {static} + getInstance(): AnuncioFacade
+    + adicionarAnuncio(anuncio: Anuncio): void
+    + atualizarAnuncio(anuncio: Anuncio): Anuncio
+    + desfazerUltimaAtualizacao(): Anuncio
+  }
+
+  class ProdutoFacade <<Facade>> {
+    {static} - instance: ProdutoFacade
+    {static} + getInstance(): ProdutoFacade
+    + montarCatalogo(): CategoriaCatalogo
+  }
+
+  class UserFacade <<Facade>> {
+    {static} - instance: UserFacade
+    {static} + getInstance(): UserFacade
+    + registrarObservador(observer: AcessoObserver): void
+    + listarAcessos(): List<AcessoLog>
+  }
+
+  class SessaoUsuario <<Facade>> {
+    {static} - INSTANCIA: SessaoUsuario
+    {static} + getInstance(): SessaoUsuario
+    + estaAutenticado(): boolean
+    + ehAdmin(): boolean
+    + ehUsuario(id: UUID): boolean
+  }
+}
+
+package "Abstract Factory" {
+  interface RepositoryFactory <<AbstractFactory>> {
+    + criarUserRepository(): IUserRepository
+    + criarProdutoRepository(): IProdutoRepository
+    + criarAnuncioRepository(): IAnuncioRepository
+    + criarAcessoLogRepository(): IAcessoLogRepository
+  }
+
+  class InMemoryRepositoryFactory <<AbstractFactory>>
+  class HibernateRepositoryFactory <<AbstractFactory>>
+}
+
+package "Composite" {
+  interface ComponenteCatalogo <<Composite>> {
+    + getNome(): String
+    + contarProdutos(): int
+    + exibir(nivel: int): String
+    + getFilhos(): List<ComponenteCatalogo>
+  }
+
+  class CategoriaCatalogo <<Composite>> {
+    - nome: String
+    - filhos: List<ComponenteCatalogo>
+    + obterOuCriarSubcategoria(nome: String): CategoriaCatalogo
+  }
+
+  class ItemCatalogo <<Composite>> {
+    - produto: Produto
+    + getProduto(): Produto
+  }
+
+  class MontadorDeCatalogo <<Composite>> {
+    + montar(nome: String, produtos: List<Produto>): CategoriaCatalogo
+  }
+
+  class Recuo <<Composite>> {
+    {static} + ate(nivel: int): String
+  }
+}
+
+package "Template Method" {
+  abstract class RelatorioAcessoTemplate<C> <<TemplateMethod>> {
+    + gerar(acessos: List<AcessoLog>, usuarios: List<User>): byte[]
+    {abstract} # abrirDocumento(): C
+    {abstract} # escreverCabecalho(documento: C, estatisticas: EstatisticasAcesso): void
+    {abstract} # escreverRankingUsuarios(documento: C, estatisticas: EstatisticasAcesso): void
+    {abstract} # escreverContagemPorAcao(documento: C, estatisticas: EstatisticasAcesso): void
+    {abstract} # fecharDocumento(documento: C): byte[]
+  }
+
+  class RelatorioTextoAcesso <<TemplateMethod>> {
+    + extensaoArquivo(): String
+  }
+  class RelatorioHtmlAcesso <<TemplateMethod>> {
+    + extensaoArquivo(): String
+  }
+  class RelatorioPdfAcesso <<TemplateMethod>> {
+    + extensaoArquivo(): String
+  }
+
+  class EstatisticasAcesso <<record>> <<TemplateMethod>> {
+    + totalAcessos: long
+    + porAcao: Map<TipoAcesso, Long>
+    + ranking: List<User>
+  }
+}
+
+package "Memento" {
+  class AnuncioMemento <<Memento>> {
+    + getAnuncioId(): UUID
+  }
+
+  class AnuncioCaretaker <<Memento>> {
+    - ultimoEstado: AnuncioMemento
+    + guardar(estado: AnuncioMemento): void
+    + recuperar(): Optional<AnuncioMemento>
+    + possuiEstadoSalvo(): boolean
+  }
+}
+
+package "Proxy" {
+  interface IAnuncioService <<Proxy>> {
+    + adicionarAnuncio(anuncio: Anuncio): void
+    + atualizarAnuncio(anuncio: Anuncio): Anuncio
+    + removerAnuncio(id: UUID): void
+  }
+
+  class AnuncioService <<Proxy>> {
+    - validator: Validator
+  }
+
+  class AnuncioServiceProxy <<Proxy>> {
+    - exigirAutenticacao(): void
+    - exigirPropriedadeDoAnuncio(id: UUID, login: String): void
+  }
+}
+
+package "Adapter" {
+  interface Logger <<Adapter>> {
+    + info(mensagem: String): void
+    + warn(mensagem: String): void
+    + error(mensagem: String, erro: Throwable): void
+  }
+
+  class Slf4jLoggerAdapter <<Adapter>>
+
+  class AppLoggerFactory <<Adapter>> {
+    {static} + getLogger(tipo: Class): Logger
+  }
+
+  class OrgSlf4jLogger <<external>>
+}
+
+package "Domínio e Repositórios" {
+  interface IUserRepository <<Repository>> {
+    + salvar(user: User): void
+    + buscarTodos(): List<User>
+    + buscarPorLogin(login: String): Optional<User>
+  }
+
+  interface IProdutoRepository <<Repository>> {
+    + salvar(produto: Produto): void
+    + buscarTodos(): List<Produto>
+  }
+
+  interface IAnuncioRepository <<Repository>> {
+    + salvar(anuncio: Anuncio): void
+    + buscarPorVendedor(vendedorId: UUID): List<Anuncio>
+    + desativarTodosDoVendedor(vendedorId: UUID): void
+  }
+
+  interface IAcessoLogRepository <<Repository>> {
+    + salvar(log: AcessoLog): void
+    + buscarTodos(): List<AcessoLog>
+  }
+
+  class InMemoryUserRepository <<Repository>>
+  class InMemoryProdutoRepository <<Repository>>
+  class InMemoryAnuncioRepository <<Repository>>
+  class InMemoryAcessoLogRepository <<Repository>>
+  class HibernateUserRepository <<Repository>>
+  class HibernateProdutoRepository <<Repository>>
+  class HibernateAnuncioRepository <<Repository>>
+  class HibernateAcessoLogRepository <<Repository>>
+
+  class HibernateSessionFactory <<Repository>> {
+    {static} - instance: SessionFactory
+    {static} + getInstance(): SessionFactory
+  }
+
+  class User <<Repository>> {
+    - id: UUID
+    - login: String
+    - role: Role
+    - ativo: boolean
+  }
+
+  enum Role <<Repository>> {
+    ADMIN
+    VENDEDOR
+    COMPRADOR
+  }
+
+  class Produto <<Repository>> {
+    - id: UUID
+    - nome: String
+    - categoria: String
+    - ativo: boolean
+  }
+
+  class Anuncio <<Repository>> {
+    - id: UUID
+    - produto: Produto
+    - vendedor: User
+    - preco: BigDecimal
+    - ativo: boolean
+    + criarMemento(): AnuncioMemento
+    + restaurar(estado: AnuncioMemento): void
+  }
+
+  class AcessoLog <<Repository>> {
+    - id: UUID
+    - usuarioId: UUID
+    - acao: TipoAcesso
+  }
+
+  enum TipoAcesso <<Repository>> {
+    CRIACAO
+    ATUALIZACAO
+    BUSCA
+    REMOCAO
+    REATIVACAO
+  }
+}
+
+package "Camada de Aplicação" {
+  class AnuncioController <<Application>> {
+    + adicionarAnuncio(anuncio: Anuncio): void
+    + removerAnuncio(id: UUID): void
+  }
+  class ProdutoController <<Application>>
+  class UserController <<Application>>
+  class ProdutoService <<Application>> {
+    - validator: Validator
+  }
+  class UserService <<Application>>
+}
+
+package "Camada de Apresentação" {
+  class AnuncioView <<View>>
+  class ProdutoView <<View>>
+  class UserView <<View>>
+  class RelatorioAcessoView <<View>>
+}
+
+' Command
+CommandInterface <|.. AdicionarAnuncioCmd
+CommandInterface <|.. AtualizarAnuncioCmd
+CommandInterface <|.. RemoverAnuncioCmd
+CommandInterface <|.. ReativarAnuncioCmd
+CommandInterface <|.. DesativarAnunciosVendedorCmd
+CommandInterface <|.. DesfazerAtualizacaoCmd
+CommandInterface <|.. AdicionarProdutoCmd
+CommandInterface <|.. AtualizarProdutoCmd
+CommandInterface <|.. RemoverProdutoCmd
+CommandInterface <|.. ReativarProdutoCmd
+CommandInterface <|.. AdicionarUsuarioCmd
+CommandInterface <|.. AtualizarUsuarioCmd
+CommandInterface <|.. RemoverUsuarioCmd
+CommandInterface <|.. ReativarUsuarioCmd
+CommandInvoker --> CommandInterface : executa
+CommandInvoker --> RegistroComando : registra
+CommandInvoker --> Logger : usa
+AdicionarAnuncioCmd --> AnuncioController : receptor
+AtualizarAnuncioCmd --> AnuncioController : receptor
+RemoverAnuncioCmd --> AnuncioController : receptor
+ReativarAnuncioCmd --> AnuncioController : receptor
+DesativarAnunciosVendedorCmd --> AnuncioController : receptor
+DesfazerAtualizacaoCmd --> AnuncioController : receptor
+AdicionarProdutoCmd --> ProdutoController : receptor
+AtualizarProdutoCmd --> ProdutoController : receptor
+RemoverProdutoCmd --> ProdutoController : receptor
+ReativarProdutoCmd --> ProdutoController : receptor
+AdicionarUsuarioCmd --> UserController : receptor
+AtualizarUsuarioCmd --> UserController : receptor
+RemoverUsuarioCmd --> UserController : receptor
+ReativarUsuarioCmd --> UserController : receptor
+AtualizarAnuncioCmd --> AnuncioCaretaker : salva memento
+DesfazerAtualizacaoCmd --> AnuncioCaretaker : restaura memento
+
+' Observer
+AcessoObserver <|.. AcessoLogObserver
+AcessoObserver <|.. NotificacaoVendedorObserver
+AcessoSubject "1" --> "0..*" AcessoObserver : notifica
+AcessoSubject --> EventoDeAcesso : emite
+AcessoLogObserver --> IAcessoLogRepository : persiste
+NotificacaoVendedorObserver --> Logger : usa
+UserFacade --> AcessoSubject : usa
+
+' Facade e Singleton
+FacadeSingletonController --> UserFacade : delega
+FacadeSingletonController --> ProdutoFacade : delega
+FacadeSingletonController --> AnuncioFacade : delega
+FacadeSingletonController --> RepositoryFactory : usa
+AnuncioFacade --> CommandInvoker : usa
+AnuncioFacade --> AnuncioCaretaker : usa
+AnuncioFacade --> AnuncioController : orquestra
+ProdutoFacade --> CommandInvoker : usa
+ProdutoFacade --> MontadorDeCatalogo : usa
+ProdutoFacade --> ProdutoController : orquestra
+ProdutoFacade --> IProdutoRepository : usa
+UserFacade --> CommandInvoker : usa
+UserFacade --> UserController : orquestra
+UserFacade --> IUserRepository : usa
+UserFacade --> IAcessoLogRepository : usa
+
+' Abstract Factory
+RepositoryFactory <|.. InMemoryRepositoryFactory
+RepositoryFactory <|.. HibernateRepositoryFactory
+InMemoryRepositoryFactory ..> InMemoryUserRepository : cria
+InMemoryRepositoryFactory ..> InMemoryProdutoRepository : cria
+InMemoryRepositoryFactory ..> InMemoryAnuncioRepository : cria
+InMemoryRepositoryFactory ..> InMemoryAcessoLogRepository : cria
+HibernateRepositoryFactory ..> HibernateUserRepository : cria
+HibernateRepositoryFactory ..> HibernateProdutoRepository : cria
+HibernateRepositoryFactory ..> HibernateAnuncioRepository : cria
+HibernateRepositoryFactory ..> HibernateAcessoLogRepository : cria
+
+' Composite
+ComponenteCatalogo <|.. CategoriaCatalogo
+ComponenteCatalogo <|.. ItemCatalogo
+CategoriaCatalogo "1" o-- "0..*" ComponenteCatalogo : filhos
+MontadorDeCatalogo --> CategoriaCatalogo : constrói
+MontadorDeCatalogo --> ItemCatalogo : cria
+CategoriaCatalogo --> Recuo : usa
+ItemCatalogo --> Recuo : usa
+ItemCatalogo --> Produto : referencia
+
+' Template Method
+RelatorioAcessoTemplate <|-- RelatorioTextoAcesso
+RelatorioAcessoTemplate <|-- RelatorioHtmlAcesso
+RelatorioAcessoTemplate <|-- RelatorioPdfAcesso
+RelatorioAcessoTemplate --> EstatisticasAcesso : calcula
+RelatorioAcessoView --> UserFacade : usa
+
+' Memento
+Anuncio --> AnuncioMemento : cria
+AnuncioMemento --> Anuncio : restaura
+AnuncioCaretaker "1" --> "0..1" AnuncioMemento : guarda/recupera
+
+' Proxy
+IAnuncioService <|.. AnuncioService
+IAnuncioService <|.. AnuncioServiceProxy
+AnuncioServiceProxy --> AnuncioService : delega ao objeto real
+AnuncioServiceProxy --> SessaoUsuario : verifica permissões
+AnuncioController --> IAnuncioService : usa
+AnuncioService --> IAnuncioRepository : usa
+AnuncioService --> IProdutoRepository : usa
+AnuncioService --> IUserRepository : usa
+
+' Adapter
+Logger <|.. Slf4jLoggerAdapter
+Slf4jLoggerAdapter --> OrgSlf4jLogger : adapta
+AppLoggerFactory ..> Slf4jLoggerAdapter : cria
+
+' Repositórios e domínio
+User --> Role
+Anuncio --> Produto
+Anuncio --> User : vendedor
+AcessoLog --> TipoAcesso
+IUserRepository <|.. InMemoryUserRepository
+IUserRepository <|.. HibernateUserRepository
+IProdutoRepository <|.. InMemoryProdutoRepository
+IProdutoRepository <|.. HibernateProdutoRepository
+IAnuncioRepository <|.. InMemoryAnuncioRepository
+IAnuncioRepository <|.. HibernateAnuncioRepository
+IAcessoLogRepository <|.. InMemoryAcessoLogRepository
+IAcessoLogRepository <|.. HibernateAcessoLogRepository
+HibernateUserRepository --> HibernateSessionFactory
+HibernateProdutoRepository --> HibernateSessionFactory
+HibernateAnuncioRepository --> HibernateSessionFactory
+HibernateAcessoLogRepository --> HibernateSessionFactory
+
+' Aplicação e apresentação
+ProdutoController --> ProdutoService
+UserController --> UserService
+ProdutoService --> IProdutoRepository
+UserService --> IUserRepository
+AnuncioView --> AnuncioFacade
+ProdutoView --> ProdutoFacade
+UserView --> UserFacade
+
+legend bottom
+  |= Cor |= Padrão |= Cor |= Padrão |
+  |<#2196F3>   | Command          |<#4CAF50>   | Observer          |
+  |<#FF9800>   | Facade/Singleton |<#F44336>   | Abstract Factory  |
+  |<#9C27B0>   | Composite        |<#FFC107>   | Template Method   |
+  |<#00BCD4>   | Memento          |<#E91E63>   | Proxy             |
+  |<#795548>   | Adapter          |             |                   |
+endlegend
+
+@enduml
